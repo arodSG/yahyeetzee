@@ -1,0 +1,26 @@
+.stats-table, .top-scores-table, .no-games-found {
+    width: 45%;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    min-width: 220px;
+}
+
+.stats-table th, .stats-table td, .top-scores-table th, .top-scores-table td {
+    font-size: 20px;
+    padding: 6px;
+}
+
+thead th, .stats-table tr:first-child th, .stats-table tr:first-child td {
+    padding-top: 12px !important;
+}
+
+tbody tr:last-child th, tbody tr:last-child td {
+    padding-bottom: 12px !important;
+}
+
+@media (max-width: 1950px) {
+    .stats-table th, .stats-table td, .top-scores-table th, .top-scores-table td {
+        font-size: 16px;
+        padding: 5px;
+    }
+}

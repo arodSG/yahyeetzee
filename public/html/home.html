@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Yahyeetzee 🎲</title>
+    <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/override.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/global.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/home.css" />
+    <link rel="stylesheet" type="text/css" href="https://arodsg.com/css/fonts.css" />
+    <script src="https://arodsg.com/js/JQuery/jquery-3.4.1.min.js"></script>
+    <script src="https://arodsg.com/js/JQuery/jquery-ui-1.12.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+    <script src="/public/js/global.js" type="module"></script>
+    <script src="/public/js/home.js" type="module"></script>
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="pt-0 mt-0">
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <symbol id="header-dice" viewBox="0 0 16 16">
+            <path class="header-dice-background" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+            <circle cx="4" cy="4" r="1.5"/>
+            <circle cx="12" cy="4" r="1.5"/>
+            <circle cx="4" cy="8" r="1.5"/>
+            <circle cx="12" cy="8" r="1.5"/>
+            <circle cx="4" cy="12" r="1.5"/>
+            <circle cx="12" cy="12" r="1.5"/>
+        </symbol>
+    </svg>
+
+    <div class="container-lg py-4">
+        <div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-xxl-6 p-4"></div>
+
+        <div id="header-container" class="row align-items-center mb-xxl-6 mb-4">
+            <span class="col"></span>
+            <div id="header-title-container" class="col d-flex align-items-center justify-content-center cursor-pointer">
+                <svg class="shadow-sm" width="40" height="40"><use href="#header-dice"></use></svg>
+                <h1 class="col-8 text-center fw-bold mx-xxl-3 mx-0 my-0">Yahyeetzee</h1>
+                <svg class="shadow-sm" width="40" height="40"><use href="#header-dice"></use></svg>
+            </div>
+            <div class="col text-end">
+                <div class="d-inline">
+                    <div class="dropdown d-none">
+                        <a class="btn dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span id="dropdown-button-text">Log In</span>
+                        </a>
+
+                        <ul class="dropdown-menu" data-bs-theme="light">
+                            <li><a id="dropdown-log-in" class="dropdown-item cursor-pointer" href="/login">Log In</a></li>
+                            <li><a id="dropdown-settings" class="dropdown-item cursor-pointer">Settings</a></li>
+                            <li><a id="dropdown-log-out" class="dropdown-item cursor-pointer" style="display: none;">Log Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-modal" class="modal fade text-light" tabindex="-1" aria-labelledby="settings-modal-label" data-bs-theme="dark" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 id="settings-modal-label" class="modal-title text-light">Settings</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row mb-xxl-1 mb-0 align-items-center">
+                                <div class="col-9">Background Color</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <input id="background-color" type="color" value="#212529" />
+                                </div>
+                            </div>
+                            <div class="row mb-xxl-1 mb-0 align-items-center">
+                                <div class="col-9">Dice Color</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <input id="dice-color" type="color" value="#FFFFFF" />
+                                </div>
+                            </div>
+                            <div class="row mb-xxl-1 mb-0 align-items-center justify-content-end">
+                                <div class="col-9">Confirm Scores</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <div class="form-check-reverse form-switch">
+                                        <input id="confirm-scores-switch" class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row align-items-center justify-content-end">
+                                <div class="col-9">Volume</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <input id="volume-slider" class="w-100" type="range" min="0" max="25">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="main-container" class="content-container d-none">
+            <div id="single-multi-container" class="d-flex justify-content-around mb-xxl-6 mb-4 m-auto">
+                <div id="single-container" class="text-center">
+                    <h2 class="mb-xxl-4 mb-3">Single</h2>
+                    <button id="single-button" class="btn btn-lg rounded-pill shadow-lg button-main" type="button">Play</button>
+                </div>
+                <div id="multi-container" class="text-center">
+                    <h2 class="mb-xxl-4 mb-3">Multi</h2>
+                    <button id="create-room-button" class="btn btn-lg rounded-pill shadow-lg button-main" type="button">Create Room</button>
+                </div>
+            </div>
+
+            <div id="stats-leaderboard-container" class="d-flex justify-content-around mb-xxl-6 mb-4 m-auto">
+                <button id="stats-button" class="btn btn-lg rounded-pill shadow-lg button-main" type="button" disabled>Stats</button>
+                <button id="leaderboard-button" class="btn btn-lg rounded-pill shadow-lg button-main" type="button">Leaderboard</button>
+            </div>
+
+            <div id="login-info-container" class="text-center my-xxl-4 my-3 invisible">
+                <p class="info-text mb-0">Log in to save your game stats and appear on the leaderboard</p>
+            </div>
+
+            <div id="rooms-container">
+                <h2 class="mb-xxl-4 mb-3 text-center">Rooms</h2>
+
+                <div id="no-rooms-container" class="d-flex flex-column align-items-center text-center text-light mb-xxl-3 mb-2">
+                    <div id="no-rooms-message-container" class="d-flex bg-dark rounded-pill shadow room">
+                        <div class="px-3">No multiplayer rooms found</div>
+                    </div>
+                </div>
+
+                <div id="open-rooms-container" class="d-flex flex-column align-items-center"></div>
+            </div>
+        </div>
+
+        <div id="create-join-room-container" class="content-container justify-content-center" style="display: none !important;">
+            <div id="create-join-room-heading-container" class="d-flex flex-column align-items-center text-center">
+                <h2 id="create-join-room-heading" class="m-0"></h2>
+                <div id="join-room-info-container" class="d-flex bg-light text-dark rounded-pill shadow room mt-3 ps-2 pe-3">
+                    <div class="d-flex align-items-center"><span id="room-info-players"></span></div>
+                    <div class="d-flex align-items-center ms-2"><span id="room-info-leader-display-name"></span></div>
+                </div>
+            </div>
+
+            <div id="create-join-room-content-container" class="d-flex flex-column align-items-center mx-auto mt-xxl-6 mt-4">
+                <div id="max-players-container" class="mb-xxl-6 mb-4">
+                    <h3 class="text-center mb-xxl-3 mb-2">Max Players</h3>
+                    <div class="btn-group bg-light shadow" role="group" aria-label="Number of Players">
+                        <input id="players-2" value="2" type="radio" class="btn-check num-players-input" name="num-players" autocomplete="off" checked>
+                        <label class="btn num-players-button text-dark d-flex justify-content-center align-items-center" for="players-2">2</label>
+            
+                        <input id="players-3" value="3" type="radio" class="btn-check num-players-input" name="num-players" autocomplete="off">
+                        <label class="btn num-players-button bg-light text-dark d-flex justify-content-center align-items-center" for="players-3">3</label>
+            
+                        <input id="players-4" value="4" type="radio" class="btn-check num-players-input" name="num-players" autocomplete="off">
+                        <label class="btn num-players-button bg-light text-dark d-flex justify-content-center align-items-center" for="players-4">4</label>
+            
+                        <input id="players-5" value="5" type="radio" class="btn-check num-players-input" name="num-players" autocomplete="off">
+                        <label class="btn num-players-button bg-light text-dark d-flex justify-content-center align-items-center" for="players-5">5</label>
+            
+                        <input id="players-6" value="6" type="radio" class="btn-check num-players-input" name="num-players" autocomplete="off">
+                        <label class="btn num-players-button bg-light text-dark d-flex justify-content-center align-items-center" for="players-6">6</label>
+                    </div>
+                </div>
+
+                <div id="display-name-container">
+                    <h3 class="text-center mb-xxl-3 mb-2">Display Name</h3>
+                    <div aria-label="Display Name">
+                        <div class="main-input-container rounded-pill shadow mb-1">
+                            <input id="display-name-input" class="main-input form-control w-100 h-100 rounded-pill text-center" type="text" maxlength="12">
+                        </div>
+                        <div class="info-text revue-font float-end"><span id="display-name-num-characters">0</span><span>/12</span></div>
+                    </div>
+                </div>
+
+                <div id="confirm-button-wrapper" class="mt-xxl-6 mt-4" data-bs-toggle="tooltip" data-bs-placement="top">
+                    <button id="create-room-confirm-button" class="btn btn-lg rounded-pill shadow-lg button-main btn-light" type="button" disabled>Create Room</button>
+                    <button id="join-room-confirm-button" class="btn btn-lg rounded-pill shadow-lg button-main btn-light" type="button" disabled>Join Room</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

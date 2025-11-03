@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+    <path class="dice-background" fill="white" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+    <circle class="dice-circle" fill="black" cx="4" cy="4" r="1.5"/>
+    <circle class="dice-circle" fill="black" cx="12" cy="4" r="1.5"/>
+    <circle class="dice-circle" fill="black" cx="4" cy="8" r="1.5"/>
+    <circle class="dice-circle" fill="black" cx="12" cy="8" r="1.5"/>
+    <circle class="dice-circle" fill="black" cx="4" cy="12" r="1.5"/>
+    <circle class="dice-circle" fill="black" cx="12" cy="12" r="1.5"/>
+</svg>

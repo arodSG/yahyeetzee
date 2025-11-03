@@ -1,0 +1,82 @@
+#single-multi-container {
+    width: 90%;
+}
+
+#stats-leaderboard-container {
+    width: 50%;
+}
+
+.room {
+    font-family: 'Revue', Arial, sans-serif !important;
+    padding: 10px;
+    font-size: 20px;
+    max-width: 400px;
+}
+
+.join-room-button {
+    font-size: 18px;
+}
+
+.btn-group {
+    border-radius: 10px;
+}
+
+.num-players-button {
+    font-family: 'Revue', Arial, sans-serif;
+    border: 2px solid var(--bs-dark);
+    width: 68px;
+    height: 60px;
+    font-size: 2rem;
+}
+
+.num-players-button:hover {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    color: var(--bs-dark) !important;
+    border-color: var(--bs-dark) !important;
+    border-width: 2px;
+}
+
+.num-players-input:checked + .num-players-button {
+    background-color: var(--bs-dark) !important;
+    color: var(--bs-light) !important;
+    border-color: var(--bs-dark);
+    border-width: 2px;
+}
+
+.main-input-container {
+    font-family: 'Revue', Arial, sans-serif;
+    background-color: var(--bs-light) !important;
+    color: var(--bs-dark);
+    border: 2px solid var(--bs-dark);
+    height: 60px;
+    padding: 0;
+    width: 380px;
+}
+
+@media (max-width: 1950px) {
+    #single-multi-container {
+        width: 65%;
+        min-width: 388px;
+    }
+
+    #stats-leaderboard-container {
+        width: 35%;
+        min-width: 388px;
+    }
+
+    .room {
+        padding: 8px;
+        font-size: 16px;
+        max-width: 320px;
+    }
+
+    .join-room-button {
+        font-size: 14px;
+    }
+
+    .num-players-button {
+        width: 58px;
+        height: 50px;
+        font-size: 1.6rem;
+    }
+}

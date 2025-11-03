@@ -1,0 +1,31 @@
+.leaderboard-table, .no-games-found {
+    width: 75%;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    min-width: 340px;
+}
+
+.leaderboard-table th, .leaderboard-table td {
+    font-size: 20px;
+    padding: 6px;
+}
+
+thead th {
+    padding-top: 12px !important;
+}
+
+tbody tr:last-child th, tbody tr:last-child td {
+    padding-bottom: 12px !important;
+}
+
+a {
+    color: var(--bs-body-color);
+    text-decoration: none;
+}
+
+@media (max-width: 1950px) {
+    .leaderboard-table th, .leaderboard-table td {
+        font-size: 16px;
+        padding: 5px;
+    }
+}

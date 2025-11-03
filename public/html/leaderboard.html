@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Yahyeetzee 🎲 Leaderboard</title>
+    <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/override.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/global.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/leaderboard.css" />
+    <link rel="stylesheet" type="text/css" href="https://arodsg.com/css/fonts.css" />
+    <script src="https://arodsg.com/js/JQuery/jquery-3.4.1.min.js"></script>
+    <script src="https://arodsg.com/js/JQuery/jquery-ui-1.12.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+    <script src="/public/js/global.js" type="module"></script>
+    <script src="/public/js/leaderboard.js" type="module"></script>
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="pt-0 mt-0">
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <symbol id="header-dice" viewBox="0 0 16 16">
+            <path class="header-dice-background" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+            <circle cx="4" cy="4" r="1.5"/>
+            <circle cx="12" cy="4" r="1.5"/>
+            <circle cx="4" cy="8" r="1.5"/>
+            <circle cx="12" cy="8" r="1.5"/>
+            <circle cx="4" cy="12" r="1.5"/>
+            <circle cx="12" cy="12" r="1.5"/>
+        </symbol>
+    </svg>
+
+    <div class="container-lg py-4">
+        <div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-xxl-6 p-4"></div>
+
+        <div id="header-container" class="row align-items-center mb-xxl-6 mb-4">
+            <span class="col"></span>
+            <div id="header-title-container" class="col d-flex align-items-center justify-content-center cursor-pointer">
+                <svg class="shadow-sm" width="40" height="40"><use href="#header-dice"></use></svg>
+                <h1 class="col-8 text-center fw-bold mx-xxl-3 mx-0 my-0">Yahyeetzee</h1>
+                <svg class="shadow-sm" width="40" height="40"><use href="#header-dice"></use></svg>
+            </div>
+            <div class="col text-end">
+                <div class="d-inline">
+                    <div class="dropdown d-none">
+                        <a class="btn dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span id="dropdown-button-text">Log In</span>
+                        </a>
+
+                        <ul class="dropdown-menu" data-bs-theme="light">
+                            <li><a id="dropdown-log-in" class="dropdown-item cursor-pointer" href="/login">Log In</a></li>
+                            <li><a id="dropdown-settings" class="dropdown-item cursor-pointer">Settings</a></li>
+                            <li><a id="dropdown-log-out" class="dropdown-item cursor-pointer" style="display: none;">Log Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-modal" class="modal fade text-light" tabindex="-1" aria-labelledby="settings-modal-label" data-bs-theme="dark" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 id="settings-modal-label" class="modal-title text-light">Settings</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row mb-xxl-1 mb-0 align-items-center">
+                                <div class="col-9">Background Color</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <input id="background-color" type="color" value="#212529" />
+                                </div>
+                            </div>
+                            <div class="row mb-xxl-1 mb-0 align-items-center">
+                                <div class="col-9">Dice Color</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <input id="dice-color" type="color" value="#FFFFFF" />
+                                </div>
+                            </div>
+                            <div class="row mb-xxl-1 mb-0 align-items-center justify-content-end">
+                                <div class="col-9">Confirm Scores</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <div class="form-check-reverse form-switch">
+                                        <input id="confirm-scores-switch" class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row align-items-center justify-content-end">
+                                <div class="col-9">Volume</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <input id="volume-slider" class="w-100" type="range" min="0" max="25">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="main-container" class="content-container">
+            <div class="d-flex flex-column align-items-center text-center">
+                <h2 class="m-0">Leaderboard</h2>
+            </div>
+
+            <div class="row mx-auto">
+                <div class="col d-flex flex-column align-items-center text-center mt-xxl-6 mt-4">
+                    <h3 class="mb-xxl-3 mb-2">Single</h3>
+
+                    <div id="single-leaderboard-container" class="d-flex flex-column align-items-center text-center w-100">
+                        <table id="single-leaderboard-table" class="leaderboard-table d-none">
+                            <thead>
+                                <tr>
+                                    <th class="col-1" scope="col">#</th>
+                                    <th class="col-5" scope="col">Name</th>
+                                    <th class="col-3" scope="col">Score</th>
+                                    <th class="col-3" scope="col">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="single-leaderboard-table-body"></tbody>
+                        </table>
+                        <p id="single-no-games-found" class="no-games-found">No games found</p>
+                    </div>
+                </div>
+
+                <div class="col d-flex flex-column align-items-center text-center mt-xxl-6 mt-4">
+                    <h3 class="mb-xxl-3 mb-2">Multi</h3>
+
+                    <div id="multi-leaderboard-container" class="d-flex flex-column align-items-center text-center w-100">
+                        <table id="multi-leaderboard-table" class="leaderboard-table d-none">
+                            <thead>
+                                <tr>
+                                    <th scope="col-1">#</th>
+                                    <th scope="col-5">Name</th>
+                                    <th scope="col-3">Score</th>
+                                    <th scope="col-3">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="multi-leaderboard-table-body"></tbody>
+                        </table>
+                        <p id="multi-no-games-found" class="no-games-found">No games found</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

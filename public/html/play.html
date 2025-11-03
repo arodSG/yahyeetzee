@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Yahyeetzee 🎲 Play</title>
+    <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/override.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/global.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/play.css" />
+    <link rel="stylesheet" type="text/css" href="https://arodsg.com/css/fonts.css" />
+    <script src="https://arodsg.com/js/JQuery/jquery-3.4.1.min.js"></script>
+    <script src="https://arodsg.com/js/JQuery/jquery-ui-1.12.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+    <script src="/public/js/global.js" type="module"></script>
+    <script src="/public/js/play.js" type="module"></script>
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="pt-0 mt-0">
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <symbol id="dice-1" viewBox="0 0 16 16">
+            <path class="dice-background" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+            <circle cx="8" cy="8" r="1.5"/>
+        </symbol>
+        <symbol id="dice-2" viewBox="0 0 16 16">
+            <path class="dice-background" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+            <circle cx="4" cy="4" r="1.5"/>
+            <circle cx="12" cy="12" r="1.5"/>
+        </symbol>
+        <symbol id="dice-3" viewBox="0 0 16 16">
+            <path class="dice-background" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+            <circle class="dice-circle" cx="4" cy="4" r="1.5"/>
+            <circle class="dice-circle" cx="8" cy="8" r="1.5"/>
+            <circle class="dice-circle" cx="12" cy="12" r="1.5"/>
+        </symbol>
+        <symbol id="dice-4" viewBox="0 0 16 16">
+            <path class="dice-background" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+            <circle class="dice-circle" cx="4" cy="4" r="1.5"/>
+            <circle class="dice-circle" cx="12" cy="4" r="1.5"/>
+            <circle class="dice-circle" cx="4" cy="12" r="1.5"/>
+            <circle class="dice-circle" cx="12" cy="12" r="1.5"/>
+        </symbol>
+        <symbol id="dice-5" viewBox="0 0 16 16">
+            <path class="dice-background" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+            <circle class="dice-circle" cx="4" cy="4" r="1.5"/>
+            <circle class="dice-circle" cx="8" cy="8" r="1.5"/>
+            <circle class="dice-circle" cx="12" cy="4" r="1.5"/>
+            <circle class="dice-circle" cx="4" cy="12" r="1.5"/>
+            <circle class="dice-circle" cx="12" cy="12" r="1.5"/>
+        </symbol>
+        <symbol id="dice-6" viewBox="0 0 16 16">
+            <path class="dice-background" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+            <circle class="dice-circle" cx="4" cy="4" r="1.5"/>
+            <circle class="dice-circle" cx="12" cy="4" r="1.5"/>
+            <circle class="dice-circle" cx="4" cy="8" r="1.5"/>
+            <circle class="dice-circle" cx="12" cy="8" r="1.5"/>
+            <circle class="dice-circle" cx="4" cy="12" r="1.5"/>
+            <circle class="dice-circle" cx="12" cy="12" r="1.5"/>
+        </symbol>
+        
+        <symbol id="header-dice" viewBox="0 0 16 16">
+            <path class="header-dice-background" d="M3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3"/>
+            <circle cx="4" cy="4" r="1.5"/>
+            <circle cx="12" cy="4" r="1.5"/>
+            <circle cx="4" cy="8" r="1.5"/>
+            <circle cx="12" cy="8" r="1.5"/>
+            <circle cx="4" cy="12" r="1.5"/>
+            <circle cx="12" cy="12" r="1.5"/>
+        </symbol>
+    </svg>
+
+    <div class="container-fluid py-4">
+        <div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-xxl-6 p-4"></div>
+
+        <div id="header-container" class="row align-items-center mb-xxl-6 mb-4">
+            <span class="col"></span>
+            <div id="header-title-container" class="col d-flex align-items-center justify-content-center cursor-pointer">
+                <svg class="shadow-sm" width="40" height="40"><use href="#header-dice"></use></svg>
+                <h1 class="col-8 text-center fw-bold mx-xxl-3 mx-0 my-0">Yahyeetzee</h1>
+                <svg class="shadow-sm" width="40" height="40"><use href="#header-dice"></use></svg>
+            </div>
+            <div class="col text-end">
+                <div class="d-inline">
+                    <div class="dropdown d-none">
+                        <a class="btn dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span id="dropdown-button-text">Log In</span>
+                        </a>
+
+                        <ul class="dropdown-menu" data-bs-theme="light">
+                            <li><a id="dropdown-log-in" class="dropdown-item cursor-pointer" href="/login">Log In</a></li>
+                            <li><a id="dropdown-settings" class="dropdown-item cursor-pointer">Settings</a></li>
+                            <li><a id="dropdown-log-out" class="dropdown-item cursor-pointer" style="display: none;">Log Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settings-modal" class="modal fade text-light" tabindex="-1" aria-labelledby="settings-modal-label" data-bs-theme="dark" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 id="settings-modal-label" class="modal-title text-light">Settings</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row mb-xxl-1 mb-0 align-items-center">
+                                <div class="col-9">Background Color</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <input id="background-color" type="color" value="#212529" />
+                                </div>
+                            </div>
+                            <div class="row mb-xxl-1 mb-0 align-items-center">
+                                <div class="col-9">Dice Color</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <input id="dice-color" type="color" value="#FFFFFF" />
+                                </div>
+                            </div>
+                            <div class="row mb-xxl-1 mb-0 align-items-center justify-content-end">
+                                <div class="col-9">Confirm Scores</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <div class="form-check-reverse form-switch">
+                                        <input id="confirm-scores-switch" class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row align-items-center justify-content-end">
+                                <div class="col-9">Volume</div>
+                                <div class="col-3 d-flex align-items-center justify-content-end">
+                                    <input id="volume-slider" class="w-100" type="range" min="0" max="25">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="waiting-container-wrapper" style="display: none;">
+            <div id="waiting-container" class="d-flex flex-column align-items-center">
+                <h2 id="waiting-heading" class="text-center mb-xxl-6 mb-4">Waiting to start...</h2>
+
+                <h3 class="text-center mb-0"><span id="num-players"></span></h3>
+
+                <div id="waiting-players-container" class="text-center"></div>
+
+                <button id="start-game-button" class="btn btn-lg rounded-pill shadow-lg button-main btn-dark mt-xxl-6 mt-4" type="button" style="display: none;">Start Game</button>
+            </div>
+        </div>
+
+        <div id="spinner-container-wrapper">
+            <div id="spinner-container" class="d-flex justify-content-center"><div class="spinner-border mt-6" role="status"><span class="visually-hidden">Loading...</span></div></div>
+        </div>
+
+        <div id="game-container" class="row mx-auto justify-content-center gap-xxl-6 gap-4" style="display: none;">
+            <div id="game-over-modal" class="modal fade" tabindex="-1" aria-labelledby="game-over-modal-label" data-bs-theme="dark" data-bs-backdrop="static" aria-hidden="true">
+                <div id="game-over-modal-dialog" class="modal-dialog modal-dialog-centered m-auto">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title text-light" id="game-over-modal-label">Game Over</h1>
+                        </div>
+                        <div class="modal-body text-light d-flex flex-column justify-content-center">
+                            <h4 id="game-over-winner" class="text-center mb-2"><span id="game-over-winner-name"></span> wins!</h4>
+
+                            <div class="m-auto">
+                                <table class="score-table bg-black rounded-top-4 rounded-end-1 rounded-bottom-1 shadow text-light">
+                                    <thead>
+                                        <tr class="player-headings text-center"></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="ones"></tr>
+                                        <tr class="twos"></tr>
+                                        <tr class="threes"></tr>
+                                        <tr class="fours"></tr>
+                                        <tr class="fives"></tr>
+                                        <tr class="sixes"></tr>
+                                        <tr class="totalNoBonus"></tr>
+                                        <tr class="bonus"></tr>
+                                        <tr class="threeOfAKind"></tr>
+                                        <tr class="fourOfAKind"></tr>
+                                        <tr class="fullHouse"></tr>
+                                        <tr class="smallStraight"></tr>
+                                        <tr class="largeStraight"></tr>
+                                        <tr class="chance"></tr>
+                                        <tr class="yahtzee"></tr>
+                                        <tr class="totalScore"></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="game-over-quit-button" class="btn btn-primary" type="button">Quit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="confirm-zero-modal" class="modal fade" tabindex="-1" aria-labelledby="confirm-zero-modal-label" data-bs-theme="dark" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title text-light" id="confirm-zero-modal-label">Confirm</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-light">
+                            Are you sure you want to take a zero?
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                            <button id="confirm-zero-button" class="btn btn-primary" type="button" data-bs-dismiss="modal">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="left-container" class="col">
+                <div id="turn-info-container" class="d-flex justify-content-between fw-bold">
+                    <h3 id="player-turn"></h3>
+                    <h3 id="rolls-remaining-container">Rolls: <span id="rolls-remaining"></span></h3>
+                </div>
+
+                <div id="dice-container" class="d-flex flex-column bg-dark rounded-4 shadow">
+                    <div id="rolled-dice-container" class="w-100 align-items-center justify-content-center px-2 gap-xxl-2 gap-1">
+                        <svg id="dice1" class="dice cursor-pointer"><use href="#dice-1"></use></svg>
+                        <svg id="dice2" class="dice cursor-pointer"><use href="#dice-1"></use></svg>
+                        <svg id="dice3" class="dice cursor-pointer"><use href="#dice-1"></use></svg>
+                        <svg id="dice4" class="dice cursor-pointer"><use href="#dice-1"></use></svg>
+                        <svg id="dice5" class="dice cursor-pointer"><use href="#dice-1"></use></svg>
+                    </div>
+
+                    <div id="kept-dice-container" class="flex-grow-1 w-100 align-items-center justify-content-center px-2 gap-xxl-2 gap-1"></div>
+                </div>
+                <hr>
+                <button id="roll-dice-button" class="btn btn-lg rounded-pill shadow-lg button-main" type="button">Roll Dice</button>
+            </div>
+
+            <div id="right-container" class="col-auto">
+                <table class="score-table bg-dark rounded-top-4 rounded-end-1 rounded-bottom-1 shadow text-light">
+                    <thead>
+                        <tr class="player-headings text-center"></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="ones"></tr>
+                        <tr class="twos"></tr>
+                        <tr class="threes"></tr>
+                        <tr class="fours"></tr>
+                        <tr class="fives"></tr>
+                        <tr class="sixes"></tr>
+                        <tr class="totalNoBonus"></tr>
+                        <tr class="bonus"></tr>
+                        <tr class="threeOfAKind"></tr>
+                        <tr class="fourOfAKind"></tr>
+                        <tr class="fullHouse"></tr>
+                        <tr class="smallStraight"></tr>
+                        <tr class="largeStraight"></tr>
+                        <tr class="chance"></tr>
+                        <tr class="yahtzee"></tr>
+                        <tr class="totalScore"></tr>
+                    </tbody>
+                </table>
+
+                <hr>
+                <div id="log-box" class="overflow-hidden bg-dark text-light rounded-1 shadow">
+                    <div id="log-messages" class="h-100 overflow-auto custom-scrollbar"></div>
+                </div>
+            </div>
+
+            <audio id="player-turn-sound" src="/audio/popding.mp3"></audio>
+            <audio id="cole-yeet-sound" src="/audio/coleyeet.mp3"></audio>
+        </div>
+    </div>
+</body>
+</html>

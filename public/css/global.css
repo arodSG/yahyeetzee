@@ -1,0 +1,223 @@
+html, body {
+    height: 100%;
+    overflow: auto;
+}
+
+.revue-font {
+    font-family: 'Revue', Arial, sans-serif !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background-color: var(--bs-light);
+    border: 1px solid var(--bs-light);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--bs-dark);
+}
+
+.custom-tooltip {
+    --bs-tooltip-bg: var(--bs-light);
+    --bs-tooltip-color: var(--bs-dark);
+}
+
+.custom-tooltip-dark {
+    --bs-tooltip-bg: var(--bs-dark);
+    --bs-tooltip-color: var(--bs-light);
+}
+
+#header-container {
+    margin: 0 auto;
+    width: 900px;
+}
+
+#header-title-container {
+    min-width: 440px;
+}
+
+#settings-modal .row {
+    height: 40px;
+}
+
+input[type="color"] {
+    width: 60px;
+    height: 32px
+}
+
+.form-check-input {
+    width: 60px !important;
+    height: 28px !important;
+}
+
+.button-main {
+    font-family: 'Revue', Arial, sans-serif !important;
+    padding: 20px !important;
+    width: 250px !important;
+    font-size: 28px !important;
+    height: 83px;
+}
+
+.button-main-sm {
+    font-family: 'Revue', Arial, sans-serif !important;
+    padding: 12px 20px 12px 20px !important;
+    width: 170px !important;
+    font-size: 22px !important;
+    height: 62px;
+}
+
+.button-main-sm-auto {
+    font-family: 'Revue', Arial, sans-serif !important;
+    padding: 12px 20px 12px 20px !important;
+    width: auto !important;
+    font-size: 22px !important;
+    height: 62px;
+}
+
+.main-input-container {
+    font-family: 'Revue', Arial, sans-serif;
+    background-color: var(--bs-light) !important;
+    color: var(--bs-dark);
+    border: 2px solid var(--bs-dark);
+    height: 60px;
+    padding: 0;
+    width: 350px;
+}
+
+.show-hide-password-button {
+    background-color: var(--bs-light);
+    border-top-right-radius: var(--bs-border-radius-pill);
+    border-bottom-right-radius: var(--bs-border-radius-pill);
+}
+
+.main-input {
+    border: none;
+    border-radius: 0;
+    background-color: var(--bs-light);
+    color: var(--bs-dark);
+    font-size: 1.75rem !important;
+}
+
+.main-input:hover:not(:focus) {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    border: none;
+}
+
+.main-input:focus {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--bs-dark);
+}
+
+.no-games-found {
+    margin: 0;
+    padding: 12px 6px 12px 6px;
+}
+
+.info-text {
+    font-size: 1rem !important;
+}
+
+.modal-title {
+    font-size: 1.8em !important;
+}
+
+.modal-body {
+    font-size: 1.2em !important;
+}
+
+.toast {
+    font-size: 1.2rem;
+}
+
+.btn-close {
+    font-size: 1rem;
+}
+
+.pass-input {
+    border-top-left-radius: var(--bs-border-radius-pill) !important;
+    border-bottom-left-radius: var(--bs-border-radius-pill) !important;
+}
+
+.toggle-password {
+    padding: 12px 12px 12px 8px !important;
+    border: none;
+}
+
+.eye-slash {
+    width: 26px;
+    height: 26px;
+}
+
+.toggle-password:hover {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    border: none;
+}
+
+@media (max-width: 1950px) {
+    #header-container {
+        width: 750px;
+    }
+
+    .button-main {
+        padding: 14px !important;
+        width: 170px !important;
+        font-size: 20px !important;
+        height: 60px;
+    }
+
+    .button-main-sm {
+        padding: 8px 14px 8px 14px !important;
+        width: 130px !important;
+        font-size: 16px !important;
+        height: 46px;
+    }
+    
+    .button-main-sm-auto {
+        padding: 8px 14px 8px 14px !important;
+        font-size: 16px !important;
+        height: 46px;
+    }
+
+    .main-input-container {
+        height: 48px !important;
+        width: 275px !important;
+    }
+
+    .main-input {
+        font-size: 1.3rem !important;
+    }
+
+    .info-text {
+        font-size: 0.8rem !important;
+    }
+
+    .modal-title {
+        font-size: 1.4em !important;
+    }
+
+    .modal-body {
+        font-size: 1em !important;
+    }
+
+    .toast {
+        font-size: 1rem;
+    }
+
+    .btn-close {
+        font-size: 0.8rem;
+    }
+
+    .toggle-password {
+        padding: 8px 8px 8px 6px !important;
+    }
+
+    .eye-slash {
+        width: 20px;
+        height: 20px;
+    }
+}
