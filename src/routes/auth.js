@@ -213,12 +213,18 @@ function validatePassword(password) {
 }
 
 export async function sendVerificationEmail(to, token) {
-    await mailTransporter.sendMail({
-        from: `Yahyeetzee <${process.env.EMAIL_USER}>`,
-        to,
-        subject: 'Verify your account',
-        html: `<p>Click <a href="${process.env.ROOT_URL}/auth/verify/${token}">here</a> to verify your account and log in</p>`
-    });
+    console.log('Sending verification email to', to);
+    try {
+        await mailTransporter.sendMail({
+            from: `Yahyeetzee <${process.env.EMAIL_USER}>`,
+            to,
+            subject: 'Verify your account',
+            html: `<p>Click <a href="${process.env.ROOT_URL}/auth/verify/${token}">here</a> to verify your account and log in</p>`
+        });
+    }
+    catch(err) {
+        console.error('Error sending verification email to', to, err);
+    }
 }
 
 async function sendPasswordResetEmail(to, token) {
