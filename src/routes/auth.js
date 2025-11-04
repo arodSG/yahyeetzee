@@ -3,22 +3,14 @@ import jwt from 'jsonwebtoken';
 import passport from 'passport';
 import bcrypt from 'bcryptjs';
 import { check } from 'express-validator';
-import nodemailer from 'nodemailer';
 import { RegExpMatcher, englishDataset, englishRecommendedTransformers } from 'obscenity';
 import { validationErrorHandler } from '../middleware/validationErrorHandler.js';
 import db from '../utils/DBUtil.js';
 import { generateJWT, getEmailWaitTimeRemaining } from '../utils/Util.js';
+import { Resend } from 'resend';
 
 const router = Router();
-const mailTransporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: true,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 router.post('/signup', [
     check('username').notEmpty().withMessage('Username is required'),
@@ -214,26 +206,38 @@ function validatePassword(password) {
 
 export async function sendVerificationEmail(to, token) {
     console.log('Sending verification email to', to);
-    try {
-        await mailTransporter.sendMail({
-            from: `Yahyeetzee <${process.env.EMAIL_USER}>`,
-            to,
-            subject: 'Verify your account',
-            html: `<p>Click <a href="${process.env.ROOT_URL}/auth/verify/${token}">here</a> to verify your account and log in</p>`
-        });
+    
+    const { data, error } = await resend.emails.send({
+        from: `Yahyeetzee <${process.env.RESEND_FROM_ADDRESS}>`,
+        to,
+        subject: 'Hello World',
+        html: '<p>Congrats on sending your <strong>first email</strong>!</p>'
+    });
+
+    if(error) {
+        console.error('Failed to send email:', error);
+        return;
     }
-    catch(err) {
-        console.error('Error sending verification email to', to, err);
-    }
+
+    console.log('Email sent successfully:', data.id);
 }
 
 async function sendPasswordResetEmail(to, token) {
-    await mailTransporter.sendMail({
-        from: `Yahyeetzee <${process.env.EMAIL_USER}>`,
+    console.log('Sending password reset email to', to);
+
+    const { data, error } = await resend.emails.send({
+        from: `Yahyeetzee <${process.env.RESEND_FROM_ADDRESS}>`,
         to,
         subject: 'Reset your password',
         html: `<p>Click <a href="${process.env.ROOT_URL}/resetpassword?token=${token}">here</a> to reset your password</p>`
     });
+
+    if(error) {
+        console.error('Failed to send email:', error);
+        return;
+    }
+
+    console.log('Email sent successfully:', data.id);
 }
 
 function verifyToken(req, res, next) {
