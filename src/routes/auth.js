@@ -206,12 +206,12 @@ function validatePassword(password) {
 
 export async function sendVerificationEmail(to, token) {
     console.log('Sending verification email to', to);
-    
+
     const { data, error } = await resend.emails.send({
         from: `Yahyeetzee <${process.env.RESEND_FROM_ADDRESS}>`,
         to,
-        subject: 'Hello World',
-        html: '<p>Congrats on sending your <strong>first email</strong>!</p>'
+        subject: 'Verify your account',
+        html: `<p>Click <a href="${process.env.ROOT_URL}/auth/verify/${token}">here</a> to verify your account and log in</p>`
     });
 
     if(error) {
