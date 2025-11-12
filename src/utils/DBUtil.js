@@ -19,7 +19,7 @@ class DBUtil {
             return rows;
         }
         catch(err) {
-            console.error('Database query error:', err);
+            console.error('Database query error:', err.message);
             throw err;
         }
         finally {
