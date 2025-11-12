@@ -1,15 +1,18 @@
 import { Router } from 'express';
 import db from '../utils/DBUtil.js';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 
 router.get('/get-stats', async(req, res) => {
     const userQueryParam = req.query.user;
-    const user = req.user;
-    const username = userQueryParam || (user ? user.username : null);
+    // const user = req.user;
+    const loggedInToken = req.cookies.loggedInToken;
+    const user = loggedInToken ? jwt.verify(loggedInToken, process.env.JWT_SECRET) : null;
+    const username = userQueryParam || (user?.username || null);
 
     if(username) {
-        const user = await db.getUser(userQueryParam || req?.user?.username);
+        const user = await db.getUser(username);
 
         if(user) {
             const userId = user.id;
