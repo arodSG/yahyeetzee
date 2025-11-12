@@ -2,6 +2,7 @@ import { Router } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isGameIdValid } from '../utils/Util.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
