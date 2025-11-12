@@ -66,7 +66,7 @@ io.use((socket, next) => {
     const token = cookies.loggedInToken || null;
 
     if(!token) {
-        return next(new Error('No token provided'));
+        next();
     }
 
     try {
