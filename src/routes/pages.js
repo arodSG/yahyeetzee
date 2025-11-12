@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import path from 'path';
-import passport from 'passport';
 import { fileURLToPath } from 'url';
 import { isGameIdValid } from '../utils/Util.js';
 
@@ -58,7 +57,7 @@ router.get('/leaderboard', (req, res) => {
     res.sendFile(path.join(__dirname, '../../public/html/leaderboard.html'));
 });
 
-router.get('/resetpassword', (req, res) => {
+router.get('/resetpassword', authMiddleware, (req, res) => {
     res.sendFile(path.join(__dirname, '../../public/html/resetpassword.html'));
 });
 

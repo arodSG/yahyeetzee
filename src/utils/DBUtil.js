@@ -1,32 +1,24 @@
 import mysql from 'mysql2';
 
 class DBUtil {
-    constructor() {
-        if(!DBUtil.instance) {
-            this.pool = mysql.createPool({
-                connectionLimit: 99,
-                host: process.env.DB_HOST,
-                user: process.env.DB_USER,
-                password: process.env.DB_PASS,
-                database: process.env.DB_NAME,
-                debug: false
-            });
+    constructor() {}
 
-            DBUtil.instance = this;
-        }
-
-        return DBUtil.instance;
-    }
-
-    executeQuery(sql, params = []) {
-        return new Promise((resolve, reject) => {
-            this.pool.query(sql, params, (error, results) => {
-                if(error) {
-                    return reject(error);
-                }
-                resolve(results);
-            });
+    async executeQuery(sql, params = []) {
+        const connection = await mysql.createConnection({
+            host: process.env.MYSQLHOST,
+            user: process.env.MYSQLUSER,
+            password: process.env.MYSQLPASSWORD,
+            database: process.env.MYSQLDATABASE,
+            port: process.env.MYSQLPORT
         });
+
+        try {
+            const [rows] = await connection.execute(sql, params);
+            return rows;
+        }
+        finally {
+            await connection.end();
+        }
     }
 
     async getUser(usernameOrEmail) {
@@ -132,19 +124,6 @@ class DBUtil {
             ORDER BY score DESC, created_date ASC
             LIMIT 20
         `);
-    }
-
-    closePool() {
-        return new Promise((resolve, reject) => {
-            this.pool.end((err) => {
-                if (err) {
-                    console.error('Error closing pool:', err);
-                    return reject(err);
-                }
-                console.log('Database connection pool closed.');
-                resolve();
-            });
-        });
     }
 }
 

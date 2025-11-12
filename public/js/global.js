@@ -1,6 +1,11 @@
 // export const socket = io('https://yahtzee.arodsg.com', { reconnection: false });
 import configPublic from '/config_public.js';
-export const socket = io(configPublic.socket.url, { reconnection: false });
+export const socket = io(configPublic.socket.url, {
+    reconnection: false,
+    auth: {
+        token: getCookie('loggedInToken')
+    }
+});
 export const settings = {};
 let settingsModal;
 

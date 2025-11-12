@@ -2,15 +2,12 @@ import express from 'express';
 import { Server } from 'socket.io';
 import { instrument } from '@socket.io/admin-ui';
 import 'dotenv/config'
-import passport from 'passport';
-import './src/utils/passportConfig.js';
-import session from 'express-session';
 import mysql from 'mysql2';
-import MySQLStore from 'express-mysql-session';
 import { v4 as uuidv4 } from 'uuid';
 import http from 'http';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import cookieParser from 'cookie-parser';
 
 import bcrypt from 'bcryptjs';
 
@@ -25,29 +22,9 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME
-}).promise();
-const sessionStore = new MySQLStore({}, pool);
-const sessionMiddleware = session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: sessionStore, // Using MySQL session store for persistence
-    cookie: {
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 365 * 5 // 5 years
-    }
-});
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(sessionMiddleware);
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(cookieParser());
 app.use(express.static(__dirname + '/public'));
 app.use('/public', express.static(__dirname + '/public'));
 app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist/'));
@@ -82,16 +59,30 @@ instrument(io, {
 httpServer.listen(process.env.SERVER_PORT);
 console.log(`Server started on port ${process.env.SERVER_PORT}`);
 
-io.engine.use(sessionMiddleware);
+io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if(!token) {
+        return next(new Error('No token provided'));
+    }
+
+    try {
+        const user = jwt.verify(token, process.env.JWT_SECRET);
+        socket.user = user;
+        console.log(`Socket authenticated for user: ${user.username}`);
+        next();
+    }
+    catch(err) {
+        return next(new Error('Invalid token'));
+    }
+});
 
 io.sockets.on('connection', async function(socket) {
     let user = null;
 
-    if(socket.request.session.passport?.user) {
-        const userId = socket.request.session.passport.user;
-        user = await db.getUserById(userId);
-        console.log(`${user.username} connected (socket: ${socket.id})`);
-        socket.emit('authenticatedUserConnected', { username: user.username });
+    if(socket.user?.username) {
+        const username = socket.user.username;
+        console.log(`${username} connected (socket: ${socket.id})`);
+        socket.emit('authenticatedUserConnected', { username });
     } else {
         console.log(`Unauthenticated user connected (socket: ${socket.id})`);
         socket.emit('unauthenticatedUserConnected');
@@ -403,7 +394,6 @@ io.sockets.on('connection', async function(socket) {
 
 const handleShutdown = async () => {
     try {
-        await db.closePool();
         console.log('Shutting down.');
         process.exit(0);
     } catch (err) {
