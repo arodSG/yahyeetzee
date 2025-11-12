@@ -131,21 +131,9 @@ router.post('/forgotpassword', [
 });
 
 router.post('/logout', (req, res) => {
-    req.logout((err) => {
-        if(err) {
-            return res.status(500).json({ message: 'Logout error' });
-        }
-
-        req.session.destroy((err) => {
-            if(err) {
-                return res.status(500).json({ message: 'Session destroy error' });
-            }
-
-            res.clearCookie('connect.sid');
-            res.clearCookie('loggedInToken');
-            res.json({ message: 'Logged out successfully' });
-        });
-    });
+    res.clearCookie('connect.sid');
+    res.clearCookie('loggedInToken');
+    res.json({ message: 'Logged out successfully' });
 });
 
 router.get('/verify/:token', verifyToken, async (req, res, next) => {
