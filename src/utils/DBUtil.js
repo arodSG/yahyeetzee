@@ -4,8 +4,10 @@ class DBUtil {
     constructor() {}
 
     async executeQuery(sql, params = []) {
+        let connection;
+
         try {
-            const connection = await mysql.createConnection({
+            connection = await mysql.createConnection({
                 host: process.env.MYSQLHOST,
                 user: process.env.MYSQLUSER,
                 password: process.env.MYSQLPASSWORD,
@@ -21,7 +23,14 @@ class DBUtil {
             throw err;
         }
         finally {
-            await connection.end();
+            if(connection) {
+                try {
+                    await connection.end();
+                }
+                catch(err) {
+                    console.warn('Error closing connection:', err.message);
+                }
+            }
         }
     }
 
