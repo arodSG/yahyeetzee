@@ -4,17 +4,21 @@ class DBUtil {
     constructor() {}
 
     async executeQuery(sql, params = []) {
-        const connection = await mysql.createConnection({
-            host: process.env.MYSQLHOST,
-            user: process.env.MYSQLUSER,
-            password: process.env.MYSQLPASSWORD,
-            database: process.env.MYSQLDATABASE,
-            port: process.env.MYSQLPORT
-        });
-
         try {
+            const connection = await mysql.createConnection({
+                host: process.env.MYSQLHOST,
+                user: process.env.MYSQLUSER,
+                password: process.env.MYSQLPASSWORD,
+                database: process.env.MYSQLDATABASE,
+                port: process.env.MYSQLPORT
+            });
+
             const [rows] = await connection.execute(sql, params);
             return rows;
+        }
+        catch(err) {
+            console.error('Database query error:', err);
+            throw err;
         }
         finally {
             await connection.end();
