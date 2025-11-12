@@ -7,7 +7,9 @@ import { v4 as uuidv4 } from 'uuid';
 import http from 'http';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import cookie from 'cookie';
 import cookieParser from 'cookie-parser';
+import jwt from 'jsonwebtoken';
 
 import bcrypt from 'bcryptjs';
 
@@ -60,7 +62,9 @@ httpServer.listen(process.env.SERVER_PORT);
 console.log(`Server started on port ${process.env.SERVER_PORT}`);
 
 io.use((socket, next) => {
-    const token = socket.handshake.auth?.token;
+    const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+    const token = cookies.loggedInToken || null;
+
     if(!token) {
         return next(new Error('No token provided'));
     }

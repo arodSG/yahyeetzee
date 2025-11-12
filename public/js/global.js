@@ -2,9 +2,7 @@
 import configPublic from '/config_public.js';
 export const socket = io(configPublic.socket.url, {
     reconnection: false,
-    auth: {
-        token: getCookie('loggedInToken')
-    }
+    withCredentials: true
 });
 export const settings = {};
 let settingsModal;
