@@ -5,31 +5,42 @@ class DBUtil {
     constructor() {}
 
     async executeQuery(sql, params = []) {
-        let client;
+        const maxRetries = 3;
+        const retryDelay = 500;
 
-        try {
-            client = new Client({
-                connectionString: process.env.DB_URL,
-                ssl: { rejectUnauthorized: false }
-            });
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            let client;
 
-            await client.connect();
+            try {
+                client = new Client({
+                    connectionString: process.env.DB_URL,
+                    ssl: { rejectUnauthorized: false }
+                });
 
-            const result = await client.query(sql, params);
+                await client.connect();
+                const result = await client.query(sql, params);
+                return result.rows;
+            }
+            catch(err) {
+                const isLastAttempt = attempt === maxRetries;
+                const shouldRetry = ['ECONNRESET', 'ECONNREFUSED'].includes(err?.code) || ['timeout', 'Connection terminated unexpectedly'].some(msg => err?.message?.includes(msg));
+                console.warn(`DB attempt ${attempt} failed:`, err.message);
 
-            return result.rows;
-        }
-        catch(err) {
-            console.error('Database query error:', err.message);
-            throw err;
-        }
-        finally {
-            if(client) {
-                try {
-                    await client.end();
+                if (!shouldRetry || isLastAttempt) {
+                    console.error('Database query error:', err.message);
+                    throw err;
                 }
-                catch(err) {
-                    console.warn('Error closing connection:', err.message);
+
+                await new Promise(res => setTimeout(res, retryDelay));
+            }
+            finally {
+                if(client) {
+                    try {
+                        await client.end();
+                    }
+                    catch(err) {
+                        console.warn('Error closing connection:', err.message);
+                    }
                 }
             }
         }
