@@ -71,7 +71,7 @@ io.use((socket, next) => {
     try {
         const user = jwt.verify(token, process.env.JWT_SECRET);
         socket.user = user;
-        console.log(`Socket authenticated for user: ${user.username} (${user.id})`);
+        console.log(`Socket authenticated for user: ${socket.user.username} (${socket.user.id})`);
         next();
     }
     catch(err) {
@@ -80,11 +80,9 @@ io.use((socket, next) => {
 });
 
 io.sockets.on('connection', async function(socket) {
-    let user = null;
-
-    if(socket.user?.username) {
-        const username = socket.user.username;
+    if(socket.user?.id && socket.user?.username) {
         const userId = socket.user.id;
+        const username = socket.user.username;
         console.log(`${username} (${userId}) connected (socket: ${socket.id})`);
         socket.emit('authenticatedUserConnected', { username });
     } else {
@@ -103,7 +101,7 @@ io.sockets.on('connection', async function(socket) {
 
         if(isGameIdValid(gameId)) {
             const game = ALL_GAMES[gameId];
-            game.updatePlayerIds(uuid, socket.id, user?.id);
+            game.updatePlayerIds(uuid, socket.id, socket.user?.id);
         }
     });
 
@@ -114,13 +112,13 @@ io.sockets.on('connection', async function(socket) {
     socket.on('createRoomRequest', function(data) {
         const maxPlayers = data.maxPlayers >= 1 && data.maxPlayers <= 6 ? data.maxPlayers : (data.maxPlayers > 6 ? 6 : 1);
         const leaderUUID = data.uuid; // TODO: validate leaderUUID is a valid UUID
-        const leaderDisplayName = (maxPlayers === 1 ? (user?.username || 'Guest') : data.displayName || '').trim();
+        const leaderDisplayName = (maxPlayers === 1 ? (socket.user?.username || 'Guest') : data.displayName || '').trim();
 
         if(isDisplayNameValid(leaderDisplayName)) {
             if(isRoomNameAvailable(leaderDisplayName)) {
                 const gameId = generateGameId();
                 const game = new Game(io, gameId, maxPlayers, leaderUUID);
-                game.addStartingPlayer(game.leaderUUID, socket.id, user?.id, leaderDisplayName);
+                game.addStartingPlayer(game.leaderUUID, socket.id, socket.user?.id, leaderDisplayName);
                 ALL_GAMES[gameId] = game;
                 socket.emit('createRoomResponse', { gameId });
 
@@ -174,7 +172,7 @@ io.sockets.on('connection', async function(socket) {
             socket.join(gameId);
 
             if(game.isWaiting && !game.isMaxPlayersAdded()) { // also check if userId is already in player list
-                game.addStartingPlayer(uuid, socket.id, user?.id, displayName);
+                game.addStartingPlayer(uuid, socket.id, socket.user?.id, displayName);
                 socket.broadcast.emit('updateOpenRooms', { rooms: getOpenRoomInfo() });
                 io.sockets.to(gameId).emit('updateWaitingPlayers', { displayNames: game.getPlayerDisplayNames(), maxPlayers: game.maxPlayers });
             }
@@ -392,7 +390,7 @@ io.sockets.on('connection', async function(socket) {
             }
         });
 
-        console.log(user ? `${user.username} disconnected` : 'Unauthenticated user disconnected');
+        console.log(socket.user?.username ? `${socket.user.username} disconnected` : 'Unauthenticated user disconnected');
     });
 });
 
