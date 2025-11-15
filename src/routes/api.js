@@ -6,13 +6,14 @@ const router = Router();
 
 router.get('/get-stats', async(req, res) => {
     const userQueryParam = req.query.user;
-    // const user = req.user;
     const loggedInToken = req.cookies.loggedInToken;
     const user = loggedInToken ? jwt.verify(loggedInToken, process.env.JWT_SECRET) : null;
     const username = userQueryParam || (user?.username || null);
 
     if(username) {
-        const user = await db.getUser(username);
+        const user = await db.getUser(username).catch(err => {
+            console.warn(`Failed to fetch user ${username}:`, JSON.stringify(err));
+        });
 
         if(user) {
             const userId = user.id;
@@ -34,7 +35,7 @@ router.get('/get-stats', async(req, res) => {
             }
         }
         else {
-            res.status(500).json({ status: 500, error: 'User not found' });
+            res.status(500).json({ status: 500, error: 'Failed to load user info' });
         }
     }
     else {
