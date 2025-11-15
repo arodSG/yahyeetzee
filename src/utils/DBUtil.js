@@ -5,8 +5,8 @@ class DBUtil {
     constructor() {}
 
     async executeQuery(sql, params = []) {
-        const maxRetries = 3;
-        const retryDelay = 500;
+        const maxRetries = 10;
+        const retryDelay = 1000;
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             let client;
@@ -23,7 +23,7 @@ class DBUtil {
             }
             catch(err) {
                 const isLastAttempt = attempt === maxRetries;
-                const shouldRetry = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err?.code) || ['timeout', 'Connection terminated unexpectedly'].some(msg => err?.message?.includes(msg));
+                const shouldRetry = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err?.code) || ['timeout', 'Connection terminated unexpectedly', 'database system is starting up'].some(msg => err?.message?.includes(msg));
                 console.warn(`DB attempt ${attempt} failed:`, err.message);
 
                 if(!shouldRetry || isLastAttempt) {
