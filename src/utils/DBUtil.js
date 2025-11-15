@@ -23,11 +23,10 @@ class DBUtil {
             }
             catch(err) {
                 const isLastAttempt = attempt === maxRetries;
-                const shouldRetry = ['ECONNRESET', 'ECONNREFUSED'].includes(err?.code) || ['timeout', 'Connection terminated unexpectedly'].some(msg => err?.message?.includes(msg));
+                const shouldRetry = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err?.code) || ['timeout', 'Connection terminated unexpectedly'].some(msg => err?.message?.includes(msg));
                 console.warn(`DB attempt ${attempt} failed:`, err.message);
 
-                if (!shouldRetry || isLastAttempt) {
-                    console.error('Database query error:', err.message);
+                if(!shouldRetry || isLastAttempt) {
                     throw err;
                 }
 
