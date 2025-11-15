@@ -72,9 +72,13 @@ function getStatsRequest() {
             }
         },
         error: function(error) {
-            const errorMessage = error?.responseJSON?.error || 'Failed to fetch stats';
+            const errorMessage = error?.responseJSON?.error || 'Failed to get stats';
             createToastMessage(`Error: ${errorMessage}`, true);
         }
+    })
+    .always(() => {
+        $('#loading-spinner').addClass('d-none');
+        $('.stats-container').removeClass('d-none');
     });
 }
 
