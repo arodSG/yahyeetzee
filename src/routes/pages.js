@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { isGameIdValid } from '../utils/Util.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import db from '../utils/DBUtil.js';
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,6 +24,10 @@ router.get('/config_public.js', (req, res) => {
 });
 
 router.get('/', (req, res) => {
+    db.executeQuery('SELECT 1').catch(err => { // asynchronous warm-up query
+        console.warn('DB warm-up failed:', err.message);
+    });
+
     res.sendFile(path.join(__dirname, '../../public/html/home.html'));
 });
 
