@@ -34,14 +34,15 @@ router.get('/', (req, res) => {
 
     if(now - lastWarmup > WARMUP_INTERVAL || lastDuration < FAST_THRESHOLD) {
         const start = Date.now();
+        console.log('Warming up database...');
         db.executeQuery('SELECT 1')
             .then(() => {
                 lastDuration = Date.now() - start;
                 lastWarmup = Date.now();
-                console.log(`DB warm-up executed in ${lastDuration}ms`);
+                console.log(`Database warmup finished in ${lastDuration}ms`);
             })
             .catch(err => {
-                console.warn('DB warm-up failed:', err.message);
+                console.warn('Database warmup failed:', JSON.stringify(err));
             });
     }
 
