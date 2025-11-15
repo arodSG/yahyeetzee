@@ -63,6 +63,7 @@ class DBUtil {
     }
 
     insertSingleGame(userId, bonus, numYahtzees, score) {
+        console.log('insertSingleGame: ', userId, bonus, numYahtzees, score);
         return this.executeQuery('INSERT INTO single_games (user_id, bonus, yahtzees, score) VALUES ($1, $2, $3, $4)', [userId, bonus, numYahtzees, score]);
     }
 
