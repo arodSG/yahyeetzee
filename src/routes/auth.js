@@ -38,7 +38,7 @@ router.post('/signup', [
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const token = generateJWT(username, '10m');
+        const token = generateJWT(null, username, '10m');
         await db.insertUser(username, hashedPassword, email);
         console.log(`${username} signed up`);
         await sendVerificationEmail(email, token);
@@ -76,14 +76,14 @@ router.post('/login', [
             return res.status(401).json({ message: `Email not verified - Please wait ${emailWaitTimeRemaining} more ${emailWaitTimeRemaining === 1 ? 'minute' : 'minutes'} before requesting another email.` });
         }
         else {
-            const token = generateJWT(user.username, '10m');
+            const token = generateJWT(user.id, user.username, '10m');
             await sendVerificationEmail(user.email, token);
             await db.updateVerificationSendDate(user.email);
             return res.status(401).json({ message: `Email not verified - New verification email sent to ${user.email}` });
         }
     }
     else {
-        const token = generateJWT(user.username, '30d');
+        const token = generateJWT(user.id, user.username, '30d');
         res.cookie('loggedInToken', token, {
             secure: process.env.NODE_ENV === 'prod',
             httpOnly: true,
@@ -118,7 +118,7 @@ router.post('/forgotpassword', [
             res.status(500).json({ message: `Please wait ${emailWaitTimeRemaining} more ${emailWaitTimeRemaining === 1 ? 'minute' : 'minutes'} before requesting another email.` });
         }
         else {
-            const token = generateJWT(user.username, '10m');
+            const token = generateJWT(user.id, user.username, '10m');
             await sendPasswordResetEmail(user.email, token);
             await db.updateVerificationSendDate(user.email);
             res.json({ status: 200, message: 'Password reset email sent' });
