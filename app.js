@@ -2,7 +2,6 @@ import express from 'express';
 import { Server } from 'socket.io';
 import { instrument } from '@socket.io/admin-ui';
 import 'dotenv/config'
-import mysql from 'mysql2';
 import { v4 as uuidv4 } from 'uuid';
 import http from 'http';
 import { fileURLToPath } from 'url';
