@@ -34,7 +34,6 @@ export default class Game { // contruct game objects when multiplayer room is cr
     }
 
     addStartingPlayer(uuid, socketId, userId, displayName) {
-        console.log('addStartingPlayer userId: ', userId);
         if(!this.isDuplicateUserId(userId)) {
             this.players.set(uuid, new Player(uuid, socketId, userId, displayName));
         }

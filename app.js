@@ -398,7 +398,8 @@ const handleShutdown = async () => {
     try {
         console.log('Shutting down.');
         process.exit(0);
-    } catch (err) {
+    }
+    catch(err) {
         console.error('Error during shutdown:', err);
         process.exit(1);
     }
