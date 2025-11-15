@@ -71,7 +71,7 @@ io.use((socket, next) => {
     try {
         const user = jwt.verify(token, process.env.JWT_SECRET);
         socket.user = user;
-        console.log(`Socket authenticated for user: ${user.username}`);
+        console.log(`Socket authenticated for user: ${user.username} (${user.id})`);
         next();
     }
     catch(err) {
@@ -84,7 +84,8 @@ io.sockets.on('connection', async function(socket) {
 
     if(socket.user?.username) {
         const username = socket.user.username;
-        console.log(`${username} connected (socket: ${socket.id})`);
+        const userId = socket.user.id;
+        console.log(`${username} (${userId}) connected (socket: ${socket.id})`);
         socket.emit('authenticatedUserConnected', { username });
     } else {
         console.log(`Unauthenticated user connected (socket: ${socket.id})`);
