@@ -85,7 +85,7 @@ router.post('/login', [
     else {
         const token = generateJWT(user.id, user.username, '30d');
         res.cookie('loggedInToken', token, {
-            secure: process.env.NODE_ENV === 'prod',
+            secure: process.env.NODE_ENV === 'production',
             httpOnly: true,
             sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000
