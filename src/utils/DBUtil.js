@@ -5,8 +5,8 @@ class DBUtil {
     constructor() {}
 
     async executeQuery(sql, params = []) {
-        const maxRetries = 10;
-        const retryDelay = 1000;
+        const maxRetries = 5;
+        const retryDelay = 2000;
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             let client;
