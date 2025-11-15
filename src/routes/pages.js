@@ -8,6 +8,12 @@ import db from '../utils/DBUtil.js';
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+let lastWarmup = 0; // timestamp of last warm-up
+let lastDuration = 0; // duration of last warm-up (ms)
+
+const WARMUP_INTERVAL = 2 * 60 * 1000; // 2 minutes
+const FAST_THRESHOLD = 150;
+
 router.get('/config_public.js', (req, res) => {
     const rootURL = process.env.ROOT_URL;
 
@@ -24,9 +30,20 @@ router.get('/config_public.js', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-    db.executeQuery('SELECT 1').catch(err => { // asynchronous warm-up query
-        console.warn('DB warm-up failed:', err.message);
-    });
+    const now = Date.now();
+
+    if(now - lastWarmup > WARMUP_INTERVAL || lastDuration < FAST_THRESHOLD) {
+        const start = Date.now();
+        db.executeQuery('SELECT 1')
+            .then(() => {
+                lastDuration = Date.now() - start;
+                lastWarmup = Date.now();
+                console.log(`DB warm-up executed in ${lastDuration}ms`);
+            })
+            .catch(err => {
+                console.warn('DB warm-up failed:', err.message);
+            });
+    }
 
     res.sendFile(path.join(__dirname, '../../public/html/home.html'));
 });
