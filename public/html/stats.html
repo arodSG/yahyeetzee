@@ -103,7 +103,13 @@
                 <h2 id="stats-heading" class="m-0">Stats</h2>
             </div>
 
-            <div class="row mx-auto mb-xxl-6 mb-4">
+            <div id="loading-spinner" class="d-flex justify-content-center my-6">
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <div class="stats-container row mx-auto mb-xxl-6 mb-4 d-none">
                 <div class="col d-flex flex-column align-items-center text-center mt-xxl-6 mt-4">
                     <h3 class="mb-xxl-3 mb-2">Single</h3>
 
@@ -159,11 +165,11 @@
                 </div>
             </div>
 
-            <div class="d-flex flex-column align-items-center text-center">
+            <div class="stats-container d-flex flex-column align-items-center text-center d-none">
                 <h2 class="m-0">Top Scores</h2>
             </div>
 
-            <div class="row mx-auto">
+            <div class="stats-container row mx-auto d-none">
                 <div id="single-top-scores-container" class="col d-flex flex-column align-items-center text-center mt-xxl-6 mt-4">
                     <table id="single-top-scores-table" class="top-scores-table d-none">
                         <thead>

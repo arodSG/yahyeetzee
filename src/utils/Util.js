@@ -65,8 +65,8 @@ export function isRoomNameAvailable(leaderDisplayName) {
     return !rooms.some(room => room.leaderDisplayName === leaderDisplayName);
 }
 
-export function generateJWT(username) {
-    return jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '10m' });
+export function generateJWT(userId, username, expiration='10m') {
+    return jwt.sign({ id: userId, username }, process.env.JWT_SECRET, { expiresIn: expiration });
 }
 
 export function getEmailWaitTimeRemaining(lastVerificationSendDate) {

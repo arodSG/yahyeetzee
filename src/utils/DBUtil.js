@@ -1,90 +1,105 @@
-import mysql from 'mysql2';
+import pkg from "pg";
+const { Client } = pkg;
 
 class DBUtil {
-    constructor() {
-        if(!DBUtil.instance) {
-            this.pool = mysql.createPool({
-                connectionLimit: 99,
-                host: process.env.DB_HOST,
-                user: process.env.DB_USER,
-                password: process.env.DB_PASS,
-                database: process.env.DB_NAME,
-                debug: false
-            });
+    constructor() {}
 
-            DBUtil.instance = this;
-        }
+    async executeQuery(sql, params = []) {
+        const maxRetries = 5;
+        const retryDelay = 2000;
 
-        return DBUtil.instance;
-    }
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            let client;
 
-    executeQuery(sql, params = []) {
-        return new Promise((resolve, reject) => {
-            this.pool.query(sql, params, (error, results) => {
-                if(error) {
-                    return reject(error);
+            try {
+                client = new Client({
+                    connectionString: process.env.DB_URL,
+                    ssl: { rejectUnauthorized: false }
+                });
+
+                await client.connect();
+                const result = await client.query(sql, params);
+                return result.rows;
+            }
+            catch(err) {
+                const isLastAttempt = attempt === maxRetries;
+                const shouldRetry = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT'].includes(err?.code) || ['timeout', 'Connection terminated unexpectedly', 'database system is starting up'].some(msg => err?.message?.includes(msg));
+
+                if(!shouldRetry || isLastAttempt) {
+                    throw err;
                 }
-                resolve(results);
-            });
-        });
+
+                await new Promise(res => setTimeout(res, retryDelay));
+            }
+            finally {
+                if(client) {
+                    try {
+                        await client.end();
+                    }
+                    catch(err) {
+                        console.warn('Error closing connection:', err.message);
+                    }
+                }
+            }
+        }
     }
 
     async getUser(usernameOrEmail) {
-        const users = await this.executeQuery('SELECT * FROM users WHERE username = ? OR email = ?', [usernameOrEmail, usernameOrEmail]);
-        return users && users[0] ? users[0] : null;
+        const users = await this.executeQuery('SELECT * FROM users WHERE username = $1 OR email = $1', [usernameOrEmail]);
+        return users?.[0] ?? null;
     }
 
     async getUserById(userId) {
-        const users = await this.executeQuery('SELECT * FROM users WHERE id = ?', [userId]);
-        return users && users[0] ? users[0] : null;
+        const users = await this.executeQuery('SELECT * FROM users WHERE id = $1', [userId]);
+        return users?.[0] ?? null;
     }
 
     insertUser(username, password, email) {
-        return this.executeQuery('INSERT INTO users(username, password, email) VALUES(?, ?, ?)', [username, password, email]);
+        return this.executeQuery('INSERT INTO users (username, password, email) VALUES ($1, $2, $3)', [username, password, email]);
     }
 
     updateVerificationSendDate(email) {
-        const date = new Date();
-        const timestamp = date.toISOString().split('T')[0] + ' ' + date.toTimeString().split(' ')[0];
-        return this.executeQuery('UPDATE users SET verification_send_date = ? WHERE email = ?', [timestamp, email])
+        const timestamp = new Date().toISOString();
+        return this.executeQuery('UPDATE users SET verification_send_date = $1 WHERE email = $2', [timestamp, email]);
     }
 
     verifyUser(userId) {
-        return this.executeQuery('UPDATE users SET is_verified = 1 WHERE id = ?', [userId]);
+        return this.executeQuery('UPDATE users SET is_verified = TRUE WHERE id = $1', [userId]);
     }
 
     updatePassword(userId, password) {
-        return this.executeQuery('UPDATE users SET password = ? WHERE id = ?', [password, userId]);
+        return this.executeQuery('UPDATE users SET password = $1 WHERE id = $2', [password, userId]);
     }
 
     insertSingleGame(userId, bonus, numYahtzees, score) {
-        return this.executeQuery('INSERT INTO single_games(user_id, bonus, yahtzees, score) VALUES(?, ?, ?, ?)', [userId, bonus, numYahtzees, score]);
+        console.log('insertSingleGame: ', userId, bonus, numYahtzees, score);
+        return this.executeQuery('INSERT INTO single_games (user_id, bonus, yahtzees, score) VALUES ($1, $2, $3, $4)', [userId, bonus, numYahtzees, score]);
     }
 
     insertMultiGame(userId, bonus, numYahtzees, score, win) {
-        return this.executeQuery('INSERT INTO multi_games(user_id, bonus, yahtzees, score, win) VALUES(?, ?, ?, ?, ?)', [userId, bonus, numYahtzees, score, win]);
+        return this.executeQuery('INSERT INTO multi_games (user_id, bonus, yahtzees, score, win) VALUES ($1, $2, $3, $4, $5)', [userId, bonus, numYahtzees, score, win]);
     }
 
     getSingleStats(userId) {
         return this.executeQuery(`
-            SELECT COUNT(user_id) AS games,
-                   CAST(SUM(bonus) AS UNSIGNED) AS bonuses,
-                   CAST(SUM(yahtzees) AS UNSIGNED) AS yahtzees,
+            SELECT COUNT(*) AS games,
+                   SUM(CASE WHEN bonus THEN 1 ELSE 0 END) AS bonuses,
+                   SUM(yahtzees) AS yahtzees,
                    ROUND(AVG(score)) AS average_score
             FROM single_games
-            WHERE user_id = ?
+            WHERE user_id = $1
         `, [userId]);
     }
 
     getMultiStats(userId) {
         return this.executeQuery(`
-            SELECT COUNT(user_id) AS games,
-                   CAST(SUM(bonus) AS UNSIGNED) AS bonuses,
-                   CAST(SUM(yahtzees) AS UNSIGNED) AS yahtzees,
+            SELECT COUNT(*) AS games,
+                   SUM(CASE WHEN bonus THEN 1 ELSE 0 END) AS bonuses,
+                   SUM(yahtzees) AS yahtzees,
                    ROUND(AVG(score)) AS average_score,
-                   CAST(SUM(win) AS UNSIGNED) AS wins
+                   SUM(CASE WHEN win THEN 1 ELSE 0 END) AS wins
             FROM multi_games
-            WHERE user_id = ?
+            WHERE user_id = $1
         `, [userId]);
     }
 
@@ -93,7 +108,7 @@ class DBUtil {
             SELECT score,
                    created_date
             FROM single_games
-            WHERE user_id = ?
+            WHERE user_id = $1
             ORDER BY score DESC, created_date ASC
             LIMIT 10
         `, [userId]);
@@ -104,7 +119,7 @@ class DBUtil {
             SELECT score,
                    created_date
             FROM multi_games
-            WHERE user_id = ?
+            WHERE user_id = $1
             ORDER BY score DESC, created_date ASC
             LIMIT 10
         `, [userId]);
@@ -116,7 +131,7 @@ class DBUtil {
                    single_games.score,
                    single_games.created_date
             FROM single_games
-            INNER JOIN users ON users.id=single_games.user_id
+            INNER JOIN users ON users.id = single_games.user_id
             ORDER BY score DESC, created_date ASC
             LIMIT 20
         `);
@@ -128,23 +143,10 @@ class DBUtil {
                    multi_games.score,
                    multi_games.created_date
             FROM multi_games
-            INNER JOIN users ON users.id=multi_games.user_id
+            INNER JOIN users ON users.id = multi_games.user_id
             ORDER BY score DESC, created_date ASC
             LIMIT 20
         `);
-    }
-
-    closePool() {
-        return new Promise((resolve, reject) => {
-            this.pool.end((err) => {
-                if (err) {
-                    console.error('Error closing pool:', err);
-                    return reject(err);
-                }
-                console.log('Database connection pool closed.');
-                resolve();
-            });
-        });
     }
 }
 

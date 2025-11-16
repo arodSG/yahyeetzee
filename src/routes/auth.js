@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
-import passport from 'passport';
 import bcrypt from 'bcryptjs';
 import { check } from 'express-validator';
 import { RegExpMatcher, englishDataset, englishRecommendedTransformers } from 'obscenity';
@@ -39,7 +38,7 @@ router.post('/signup', [
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const token = generateJWT(username);
+        const token = generateJWT(null, username, '10m');
         await db.insertUser(username, hashedPassword, email);
         console.log(`${username} signed up`);
         await sendVerificationEmail(email, token);
@@ -54,28 +53,47 @@ router.post('/signup', [
 router.post('/login', [
     check('username').notEmpty().withMessage('Username/Email is required'),
     check('password').notEmpty().withMessage('Password is required')
-], validationErrorHandler, (req, res, next) => {
-    passport.authenticate('local', (err, user, info) => {
-        if(err) {
-            console.error('Error during authentication:', err);
-            return next(err);
-        }
-        
-        if(!user) {
-            console.log('Authentication failed:', info.message);
-            return res.status(401).json({ message: info.message });
-        }
+], validationErrorHandler, async (req, res, next) => {
+    const { username, password } = req.body;
+    const user = await db.getUser(username);
 
-        req.logIn(user, (err) => {
-            if(err) {
-                console.error('Error during login:', err);
-                return next(err);
-            }
+    if(!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+    }
 
-            console.log(`${user.username} logged in`);
-            return res.redirect('/');
+    const hashedPassword = user.password;
+    const isMatch = await bcrypt.compare(password, hashedPassword);
+
+    if(!isMatch) {
+        console.log('Authentication failed: Invalid credentials');
+        return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    if(!user.is_verified) {
+        const emailWaitTimeRemaining = getEmailWaitTimeRemaining(user.verification_send_date);
+
+        if(user.verification_send_date && emailWaitTimeRemaining >= 0) {
+            return res.status(401).json({ message: `Email not verified - Please wait ${emailWaitTimeRemaining} more ${emailWaitTimeRemaining === 1 ? 'minute' : 'minutes'} before requesting another email.` });
+        }
+        else {
+            const token = generateJWT(user.id, user.username, '10m');
+            await sendVerificationEmail(user.email, token);
+            await db.updateVerificationSendDate(user.email);
+            return res.status(401).json({ message: `Email not verified - New verification email sent to ${user.email}` });
+        }
+    }
+    else {
+        const token = generateJWT(user.id, user.username, '30d');
+        res.cookie('loggedInToken', token, {
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: 30 * 24 * 60 * 60 * 1000
         });
-    })(req, res, next);
+
+        console.log(`${user.username} logged in`);
+        return res.redirect('/');
+    }
 });
 
 router.post('/forgotpassword', [
@@ -100,7 +118,7 @@ router.post('/forgotpassword', [
             res.status(500).json({ message: `Please wait ${emailWaitTimeRemaining} more ${emailWaitTimeRemaining === 1 ? 'minute' : 'minutes'} before requesting another email.` });
         }
         else {
-            const token = generateJWT(user.username);
+            const token = generateJWT(user.id, user.username, '10m');
             await sendPasswordResetEmail(user.email, token);
             await db.updateVerificationSendDate(user.email);
             res.json({ status: 200, message: 'Password reset email sent' });
@@ -113,20 +131,9 @@ router.post('/forgotpassword', [
 });
 
 router.post('/logout', (req, res) => {
-    req.logout((err) => {
-        if(err) {
-            return res.status(500).json({ message: 'Logout error' });
-        }
-
-        req.session.destroy((err) => {
-            if(err) {
-                return res.status(500).json({ message: 'Session destroy error' });
-            }
-
-            res.clearCookie('connect.sid');
-            res.json({ message: 'Logged out successfully' });
-        });
-    });
+    res.clearCookie('connect.sid');
+    res.clearCookie('loggedInToken');
+    res.json({ message: 'Logged out successfully' });
 });
 
 router.get('/verify/:token', verifyToken, async (req, res, next) => {

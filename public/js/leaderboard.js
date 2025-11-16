@@ -1,3 +1,5 @@
+import { createToastMessage } from './global.js';
+
 $(document).ready(function() {
     getLeaderboardRequest();
 });
@@ -22,6 +24,13 @@ function getLeaderboardRequest() {
                 $('#multi-leaderboard-table').removeClass('d-none');
             }
         }
+    })
+    .fail(() => {
+        createToastMessage('Error: Failed to get leaderboard data', true);
+    })
+    .always(() => {
+        $('#loading-spinner').addClass('d-none');
+        $('#leaderboard-container').removeClass('d-none');
     });
 }
 
