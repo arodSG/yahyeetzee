@@ -100,7 +100,7 @@
 
         <div id="main-container" class="content-container">
             <div class="d-flex flex-column align-items-center text-center">
-                <h2 id="stats-heading" class="m-0">Stats</h2>
+                <h2 id="stats-heading" class="m-0">{{HEADING}}</h2>
             </div>
 
             <div class="stats-container row mx-auto mb-xxl-6 mb-4">
@@ -111,19 +111,19 @@
                         <tbody>
                             <tr>
                                 <th class="col-6 text-end" scope="row">Games:</th>
-                                <td id="single-games" class="col-6">-</td>
+                                <td id="single-games" class="col-6">{{SINGLE_GAMES}}</td>
                             </tr>
                             <tr>
                                 <th class="col-6 text-end" scope="row">Bonuses:</th>
-                                <td id="single-bonuses" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right">-</td>
+                                <td id="single-bonuses" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right" title="{{SINGLE_BONUSES_PCT}}%">{{SINGLE_BONUSES}}</td>
                             </tr>
                             <tr>
                                 <th class="col-6 text-end" scope="row">Yahtzees:</th>
-                                <td id="single-yahtzees" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right">-</td>
+                                <td id="single-yahtzees" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right" title="{{SINGLE_YAHTZEES_PCT}}%">{{SINGLE_YAHTZEES}}</td>
                             </tr>
                             <tr>
                                 <th class="col-6 text-end" scope="row">Avg. Score:</th>
-                                <td id="single-average" class="col-6">-</td>
+                                <td id="single-average" class="col-6">{{SINGLE_AVERAGE}}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -136,23 +136,23 @@
                         <tbody>
                             <tr>
                                 <th class="col-6 text-end" scope="row">Games:</th>
-                                <td id="multi-games" class="col-6">-</td>
+                                <td id="multi-games" class="col-6">{{MULTI_GAMES}}</td>
                             </tr>
                             <tr>
                                 <th class="col-6 text-end" scope="row">Bonuses:</th>
-                                <td id="multi-bonuses" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right">-</td>
+                                <td id="multi-bonuses" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right" title="{{MULTI_BONUSES_PCT}}%">{{MULTI_BONUSES}}</td>
                             </tr>
                             <tr>
                                 <th class="col-6 text-end" scope="row">Yahtzees:</th>
-                                <td id="multi-yahtzees" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right">-</td>
+                                <td id="multi-yahtzees" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right" title="{{MULTI_YAHTZEES_PCT}}%">{{MULTI_YAHTZEES}}</td>
                             </tr>
                             <tr>
                                 <th class="col-6 text-end" scope="row">Avg. Score:</th>
-                                <td id="multi-average" class="col-6">-</td>
+                                <td id="multi-average" class="col-6">{{MULTI_AVERAGE}}</td>
                             </tr>
                             <tr>
                                 <th class="col-6 text-end" scope="row">Wins:</th>
-                                <td id="multi-wins" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right">-</td>
+                                <td id="multi-wins" class="col-6" data-bs-toggle="tooltip" data-bs-placement="right" title="{{MULTI_WINS_PCT}}%">{{MULTI_WINS}}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -165,7 +165,7 @@
 
             <div class="stats-container row mx-auto">
                 <div id="single-top-scores-container" class="col d-flex flex-column align-items-center text-center mt-xxl-6 mt-4">
-                    <table id="single-top-scores-table" class="top-scores-table d-none">
+                    <table id="single-top-scores-table" class="top-scores-table {{SINGLE_TABLE_VISIBILITY}}">
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
@@ -173,13 +173,13 @@
                                 <th scope="col">Date</th>
                             </tr>
                         </thead>
-                        <tbody id="single-top-scores-table-body"></tbody>
+                        <tbody id="single-top-scores-table-body">{{SINGLE_TOP_SCORES_ROWS}}</tbody>
                     </table>
-                    <p id="single-no-games-found" class="no-games-found">No games found</p>
+                    <p id="single-no-games-found" class="no-games-found {{SINGLE_NO_GAMES_VISIBILITY}}">No games found</p>
                 </div>
 
                 <div id="multi-top-scores-container" class="col d-flex flex-column align-items-center text-center mt-xxl-6 mt-4">
-                    <table id="multi-top-scores-table" class="top-scores-table d-none">
+                    <table id="multi-top-scores-table" class="top-scores-table {{MULTI_TABLE_VISIBILITY}}">
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
@@ -187,9 +187,9 @@
                                 <th scope="col">Date</th>
                             </tr>
                         </thead>
-                        <tbody id="multi-top-scores-table-body"></tbody>
+                        <tbody id="multi-top-scores-table-body">{{MULTI_TOP_SCORES_ROWS}}</tbody>
                     </table>
-                    <p id="multi-no-games-found" class="no-games-found">No games found</p>
+                    <p id="multi-no-games-found" class="no-games-found {{MULTI_NO_GAMES_VISIBILITY}}">No games found</p>
                 </div>
             </div>
         </div>

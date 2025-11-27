@@ -135,11 +135,84 @@ router.get('/stats', async (req, res) => {
             }
         }
 
-        // Render the stats page with injected data
-        const statsDataScript = `<script>window.injectedStatsData = ${JSON.stringify(statsData)};</script>`;
         const statsHtmlPath = path.join(__dirname, '../../public/html/stats.html');
         let html = readFileSync(statsHtmlPath, 'utf-8');
-        html = html.replace('</head>', `${statsDataScript}\n    </head>`);
+
+        if(statsData) {
+            const { username, singleStats, multiStats, singleTopScores, multiTopScores } = statsData;
+            const s = singleStats || {};
+            const m = multiStats || {};
+            const headingText = username.toLowerCase().endsWith('s') ? `${username}' Stats` : `${username}'s Stats`;
+            html = html.replace('{{HEADING}}', headingText);
+
+            html = html.replace('{{SINGLE_GAMES}}', s.games ?? '-');
+            html = html.replace('{{SINGLE_BONUSES}}', s.bonuses ?? '-');
+            html = html.replace('{{SINGLE_YAHTZEES}}', s.yahtzees ?? '-');
+            html = html.replace('{{SINGLE_AVERAGE}}', s.average_score ?? '-');
+
+            html = html.replace('{{MULTI_GAMES}}', m.games ?? '-');
+            html = html.replace('{{MULTI_BONUSES}}', m.bonuses ?? '-');
+            html = html.replace('{{MULTI_YAHTZEES}}', m.yahtzees ?? '-');
+            html = html.replace('{{MULTI_AVERAGE}}', m.average_score ?? '-');
+            html = html.replace('{{MULTI_WINS}}', m.wins ?? '-');
+
+            // Calculate and replace percentages for tooltips
+            const calcPercent = (numerator, denominator) => {
+                return denominator > 0 ? ((numerator / denominator) * 100).toFixed(0) : '-';
+            };
+
+            html = html.replace('{{SINGLE_BONUSES_PCT}}', calcPercent(s.bonuses, s.games));
+            html = html.replace('{{SINGLE_YAHTZEES_PCT}}', calcPercent(s.yahtzees, s.games));
+            html = html.replace('{{MULTI_BONUSES_PCT}}', calcPercent(m.bonuses, m.games));
+            html = html.replace('{{MULTI_YAHTZEES_PCT}}', calcPercent(m.yahtzees, m.games));
+            html = html.replace('{{MULTI_WINS_PCT}}', calcPercent(m.wins, m.games));
+
+            const renderTopScoresRows = (scores) => {
+                return scores.map((s, i) => {
+                    const d = new Date(s.created_date);
+                    const date = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear().toString().slice(-2)}`;
+                    return `<tr><th class="col" scope="row">${i + 1}</th><td class="col">${s.score}</td><td class="col">${date}</td></tr>`;
+                }).join('');
+            };
+
+            if(singleTopScores && singleTopScores.length > 0) {
+                html = html.replace('{{SINGLE_TOP_SCORES_ROWS}}', renderTopScoresRows(singleTopScores));
+                html = html.replace('{{SINGLE_TABLE_VISIBILITY}}', '');
+                html = html.replace('{{SINGLE_NO_GAMES_VISIBILITY}}', 'd-none');
+            } else {
+                html = html.replace('{{SINGLE_TOP_SCORES_ROWS}}', '');
+                html = html.replace('{{SINGLE_TABLE_VISIBILITY}}', 'd-none');
+                html = html.replace('{{SINGLE_NO_GAMES_VISIBILITY}}', '');
+            }
+
+            if(multiTopScores && multiTopScores.length > 0) {
+                html = html.replace('{{MULTI_TOP_SCORES_ROWS}}', renderTopScoresRows(multiTopScores));
+                html = html.replace('{{MULTI_TABLE_VISIBILITY}}', '');
+                html = html.replace('{{MULTI_NO_GAMES_VISIBILITY}}', 'd-none');
+            } else {
+                html = html.replace('{{MULTI_TOP_SCORES_ROWS}}', '');
+                html = html.replace('{{MULTI_TABLE_VISIBILITY}}', 'd-none');
+                html = html.replace('{{MULTI_NO_GAMES_VISIBILITY}}', '');
+            }
+        } else {
+            html = html.replace('{{HEADING}}', 'Stats');
+            html = html.replace('{{SINGLE_GAMES}}', '-');
+            html = html.replace('{{SINGLE_BONUSES}}', '-');
+            html = html.replace('{{SINGLE_YAHTZEES}}', '-');
+            html = html.replace('{{SINGLE_AVERAGE}}', '-');
+            html = html.replace('{{MULTI_GAMES}}', '-');
+            html = html.replace('{{MULTI_BONUSES}}', '-');
+            html = html.replace('{{MULTI_YAHTZEES}}', '-');
+            html = html.replace('{{MULTI_AVERAGE}}', '-');
+            html = html.replace('{{MULTI_WINS}}', '-');
+            html = html.replace('{{SINGLE_TOP_SCORES_ROWS}}', '');
+            html = html.replace('{{SINGLE_TABLE_VISIBILITY}}', 'd-none');
+            html = html.replace('{{SINGLE_NO_GAMES_VISIBILITY}}', '');
+            html = html.replace('{{MULTI_TOP_SCORES_ROWS}}', '');
+            html = html.replace('{{MULTI_TABLE_VISIBILITY}}', 'd-none');
+            html = html.replace('{{MULTI_NO_GAMES_VISIBILITY}}', '');
+        }
+
         res.send(html);
     } catch(error) {
         console.error('Error in /stats route:', error);
