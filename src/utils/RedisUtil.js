@@ -38,8 +38,8 @@ class RedisUtil {
         }
     }
 
-    getRedisKey(userId, statType) {
-        return `user_stats:${userId}:${statType}`;
+    getRedisKey(userId) {
+        return `user_stats:${userId}`;
     }
 
     async cacheUserStats(userId, singleStats, multiStats, singleTopScores, multiTopScores) {
@@ -48,20 +48,20 @@ class RedisUtil {
         }
 
         try {
-            const singleStatsKey = this.getRedisKey(userId, 'single');
-            const multiStatsKey = this.getRedisKey(userId, 'multi');
-            const singleTopScoresKey = this.getRedisKey(userId, 'single_top_scores');
-            const multiTopScoresKey = this.getRedisKey(userId, 'multi_top_scores');
+            const key = this.getRedisKey(userId);
 
             // Cache for 24 hours (86400 seconds)
             const ttl = 24 * 60 * 60;
 
-            await Promise.all([
-                this.client.setEx(singleStatsKey, ttl, JSON.stringify(singleStats)),
-                this.client.setEx(multiStatsKey, ttl, JSON.stringify(multiStats)),
-                this.client.setEx(singleTopScoresKey, ttl, JSON.stringify(singleTopScores)),
-                this.client.setEx(multiTopScoresKey, ttl, JSON.stringify(multiTopScores))
-            ]);
+            const payload = JSON.stringify({
+                singleStats,
+                multiStats,
+                singleTopScores,
+                multiTopScores
+            });
+
+            await this.client.setEx(key, ttl, payload);
+            console.log(`Redis: cached stats for user ${userId}`);
         } catch (err) {
             console.error('Failed to cache user stats in Redis:', err);
         }
@@ -73,28 +73,27 @@ class RedisUtil {
         }
 
         try {
-            const singleStatsKey = this.getRedisKey(userId, 'single');
-            const multiStatsKey = this.getRedisKey(userId, 'multi');
-            const singleTopScoresKey = this.getRedisKey(userId, 'single_top_scores');
-            const multiTopScoresKey = this.getRedisKey(userId, 'multi_top_scores');
+            const key = this.getRedisKey(userId);
+            const raw = await this.client.get(key);
 
-            const results = await Promise.all([
-                this.client.get(singleStatsKey),
-                this.client.get(multiStatsKey),
-                this.client.get(singleTopScoresKey),
-                this.client.get(multiTopScoresKey)
-            ]);
+            if (!raw) {
+                console.log(`Redis: cache miss for user ${userId}`);
+                return null;
+            }
 
-            // If any of the required data is missing, return null to force database lookup
-            if (!results[0] || !results[1]) {
+            const parsed = JSON.parse(raw);
+            console.log(`Redis: cache hit for user ${userId}`);
+
+            // Validate presence of core stats; fall back to DB if missing
+            if (!parsed.singleStats || !parsed.multiStats) {
                 return null;
             }
 
             return {
-                singleStats: JSON.parse(results[0]),
-                multiStats: JSON.parse(results[1]),
-                singleTopScores: results[2] ? JSON.parse(results[2]) : [],
-                multiTopScores: results[3] ? JSON.parse(results[3]) : []
+                singleStats: parsed.singleStats,
+                multiStats: parsed.multiStats,
+                singleTopScores: parsed.singleTopScores || [],
+                multiTopScores: parsed.multiTopScores || []
             };
         } catch (err) {
             console.error('Failed to retrieve cached user stats from Redis:', err);
@@ -108,14 +107,9 @@ class RedisUtil {
         }
 
         try {
-            const keys = [
-                this.getRedisKey(userId, 'single'),
-                this.getRedisKey(userId, 'multi'),
-                this.getRedisKey(userId, 'single_top_scores'),
-                this.getRedisKey(userId, 'multi_top_scores')
-            ];
-
-            await Promise.all(keys.map(key => this.client.del(key)));
+            const key = this.getRedisKey(userId);
+            await this.client.del(key);
+            console.log(`Redis: invalidated cache for user ${userId}`);
         } catch (err) {
             console.error('Failed to invalidate user stats cache:', err);
         }
