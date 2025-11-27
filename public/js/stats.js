@@ -1,7 +1,14 @@
 import { getQueryParam, createToastMessage } from './global.js';
 
 $(document).ready(function() {
-    getStatsRequest();
+    // Use the injected server-side data instead of making an AJAX request
+    if(window.injectedStatsData && window.injectedStatsData !== null) {
+        displayStats(window.injectedStatsData);
+    } else {
+        // If no data was injected (shouldn't happen), show error
+        $('#loading-spinner').addClass('d-none');
+        createToastMessage('Error: Unable to load stats', true);
+    }
 });
 
 function setStatPercentageTooltips(singleStats, multiStats) {
@@ -22,64 +29,48 @@ function setStatPercentageTooltips(singleStats, multiStats) {
     Object.keys(percentages).forEach(elementSelector => setStatPercentageTooltip(`#${elementSelector}`, percentages[elementSelector]));
 }
 
-function getStatsRequest() {
-    const userQueryParam = getQueryParam('user');
-    const requestParams = userQueryParam ? { user: userQueryParam.trim() } : {};
+function displayStats(response) {
+    if(response && response.username) {
+        const username = response.username;
+        const singleStats = response.singleStats;
+        const singleTopScores = response.singleTopScores || [];
+        const multiStats = response.multiStats;
+        const multiTopScores = response.multiTopScores || [];
 
-    $.ajax({
-        url: '/api/get-stats',
-        type: 'GET',
-        data: requestParams,
-        contentType: 'application/json',
-        success: function(response) {
-            if(response.status === 200) {
-                const username = response.username ;
-                const singleStats = response.singleStats;
-                const singleTopScores = response.singleTopScores || [];
-                const multiStats = response.multiStats;
-                const multiTopScores = response.multiTopScores || [];
-
-                if(username) {
-                    $('#stats-heading').text(username.toLowerCase().endsWith('s') ? `${username}' Stats` : `${username}'s Stats`);
-                }
-
-                $('#single-games').text(singleStats.games != null ? singleStats.games : '-');
-                $('#single-bonuses').text(singleStats.bonuses != null ? singleStats.bonuses : '-');
-                $('#single-yahtzees').text(singleStats.yahtzees != null ? singleStats.yahtzees : '-');
-                $('#single-average').text(singleStats.average_score != null ? singleStats.average_score : '-');
-                
-                $('#multi-games').text(multiStats.games != null ? multiStats.games : '-');
-                $('#multi-bonuses').text(multiStats.bonuses != null ? multiStats.bonuses : '-');
-                $('#multi-yahtzees').text(multiStats.yahtzees != null ? multiStats.yahtzees : '-');
-                $('#multi-average').text(multiStats.average_score != null ? multiStats.average_score : '-');
-                $('#multi-wins').text(multiStats.wins != null ? multiStats.wins : '-');
-
-                setStatPercentageTooltips(singleStats, multiStats);
-
-                if(singleTopScores.length) {
-                    const singleTopScoresTableBodyHtml = getTopScoresTableHtml(singleTopScores);
-                    $('#single-top-scores-table-body').html(singleTopScoresTableBodyHtml);
-                    $('#single-no-games-found').addClass('d-none');
-                    $('#single-top-scores-table').removeClass('d-none');
-                }
-
-                if(multiTopScores.length) {
-                    const multiTopScoresTableBodyHtml = getTopScoresTableHtml(multiTopScores);
-                    $('#multi-top-scores-table-body').html(multiTopScoresTableBodyHtml);
-                    $('#multi-no-games-found').addClass('d-none');
-                    $('#multi-top-scores-table').removeClass('d-none');
-                }
-            }
-        },
-        error: function(error) {
-            const errorMessage = error?.responseJSON?.error || 'Failed to get stats';
-            createToastMessage(`Error: ${errorMessage}`, true);
+        if(username) {
+            $('#stats-heading').text(username.toLowerCase().endsWith('s') ? `${username}' Stats` : `${username}'s Stats`);
         }
-    })
-    .always(() => {
-        $('#loading-spinner').addClass('d-none');
-        $('.stats-container').removeClass('d-none');
-    });
+
+        $('#single-games').text(singleStats.games != null ? singleStats.games : '-');
+        $('#single-bonuses').text(singleStats.bonuses != null ? singleStats.bonuses : '-');
+        $('#single-yahtzees').text(singleStats.yahtzees != null ? singleStats.yahtzees : '-');
+        $('#single-average').text(singleStats.average_score != null ? singleStats.average_score : '-');
+        
+        $('#multi-games').text(multiStats.games != null ? multiStats.games : '-');
+        $('#multi-bonuses').text(multiStats.bonuses != null ? multiStats.bonuses : '-');
+        $('#multi-yahtzees').text(multiStats.yahtzees != null ? multiStats.yahtzees : '-');
+        $('#multi-average').text(multiStats.average_score != null ? multiStats.average_score : '-');
+        $('#multi-wins').text(multiStats.wins != null ? multiStats.wins : '-');
+
+        setStatPercentageTooltips(singleStats, multiStats);
+
+        if(singleTopScores.length) {
+            const singleTopScoresTableBodyHtml = getTopScoresTableHtml(singleTopScores);
+            $('#single-top-scores-table-body').html(singleTopScoresTableBodyHtml);
+            $('#single-no-games-found').addClass('d-none');
+            $('#single-top-scores-table').removeClass('d-none');
+        }
+
+        if(multiTopScores.length) {
+            const multiTopScoresTableBodyHtml = getTopScoresTableHtml(multiTopScores);
+            $('#multi-top-scores-table-body').html(multiTopScoresTableBodyHtml);
+            $('#multi-no-games-found').addClass('d-none');
+            $('#multi-top-scores-table').removeClass('d-none');
+        }
+    }
+
+    $('#loading-spinner').addClass('d-none');
+    $('.stats-container').removeClass('d-none');
 }
 
 function getTopScoresTableHtml(topScoresArr) {

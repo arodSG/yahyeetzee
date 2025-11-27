@@ -1,9 +1,12 @@
 import { Router } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
 import { isGameIdValid } from '../utils/Util.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import db from '../utils/DBUtil.js';
+import redis from '../utils/RedisUtil.js';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -73,8 +76,80 @@ router.get('/play/:gameId', (req, res) => {
     }
 });
 
-router.get('/stats', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../public/html/stats.html'));
+router.get('/stats', async (req, res) => {
+    try {
+        const userQueryParam = req.query.user;
+        const loggedInToken = req.cookies.loggedInToken;
+        const user = loggedInToken ? jwt.verify(loggedInToken, process.env.JWT_SECRET) : null;
+        const username = userQueryParam || (user?.username || null);
+
+        let statsData = null;
+
+        if(username) {
+            const dbUser = await db.getUser(username).catch(err => {
+                console.warn(`Failed to fetch user ${username}:`, JSON.stringify(err));
+            });
+
+            if(dbUser) {
+                const userId = dbUser.id;
+
+                // Try to get stats from Redis cache first
+                const cachedStats = await redis.getCachedUserStats(userId);
+                
+                if(cachedStats) {
+                    statsData = {
+                        username: dbUser.username,
+                        singleStats: cachedStats.singleStats,
+                        multiStats: cachedStats.multiStats,
+                        singleTopScores: cachedStats.singleTopScores,
+                        multiTopScores: cachedStats.multiTopScores
+                    };
+                } else {
+                    // If not in cache, fetch from database
+                    const singleStatsQuery = db.getSingleStats(userId);
+                    const multiStatsQuery = db.getMultiStats(userId);
+                    const singleTopScoresQuery = db.getSingleTopScores(userId);
+                    const multiTopScoresQuery = db.getMultiTopScores(userId);
+
+                    try {
+                        const results = await Promise.all([singleStatsQuery, multiStatsQuery, singleTopScoresQuery, multiTopScoresQuery]);
+                        const singleStats = results[0][0] || { bonuses: 0, yahtzees: 0, games: 0, average_score: 0 };
+                        const multiStats = results[1][0] || { bonuses: 0, yahtzees: 0, games: 0, average_score: 0, wins: 0 };
+                        const singleTopScores = results[2] || [];
+                        const multiTopScores = results[3] || [];
+
+                        statsData = {
+                            username: dbUser.username,
+                            singleStats,
+                            multiStats,
+                            singleTopScores,
+                            multiTopScores
+                        };
+
+                        // Cache the stats for future requests
+                        await redis.cacheUserStats(userId, singleStats, multiStats, singleTopScores, multiTopScores);
+                    } catch(error) {
+                        console.log(error);
+                    }
+                }
+            }
+        }
+
+        // Render the stats page with injected data
+        const statsHtmlPath = path.join(__dirname, '../../public/html/stats.html');
+        let html = readFileSync(statsHtmlPath, 'utf-8');
+        
+        // Inject the stats data as a window variable before the stats.js script loads
+        const statsDataScript = `<script>
+            window.injectedStatsData = ${JSON.stringify(statsData)};
+        </script>`;
+
+        html = html.replace('</head>', `${statsDataScript}\n    </head>`);
+        res.send(html);
+    } catch(error) {
+        console.error('Error in /stats route:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 router.get('/leaderboard', (req, res) => {
