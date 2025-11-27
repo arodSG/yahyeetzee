@@ -220,9 +220,69 @@ router.get('/stats', async (req, res) => {
     }
 });
 
-router.get('/leaderboard', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../public/html/leaderboard.html'));
+router.get('/leaderboard', async (req, res) => {
+    try {
+        const singleScoresQuery = db.getSingleLeaderboard();
+        const multiScoresQuery = db.getMultiLeaderboard();
+
+        const results = await Promise.all([singleScoresQuery, multiScoresQuery]);
+        const singleScores = results[0] || [];
+        const multiScores = results[1] || [];
+
+        const leaderboardHtmlPath = path.join(__dirname, '../../public/html/leaderboard.html');
+        let html = readFileSync(leaderboardHtmlPath, 'utf-8');
+
+        const renderLeaderboardRows = (scores) => scores.map((row, idx) => {
+            const name = row.username;
+            const score = row.score;
+            const d = new Date(row.created_date);
+            const date = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear().toString().slice(-2)}`;
+            const link = `/stats?user=${encodeURIComponent(name)}`;
+            return `<tr><th scope="row">${idx + 1}</th><td><a class="fst-italic" href="${link}">${escapeHtml(name)}</a></td><td>${score}</td><td>${date}</td></tr>`;
+        }).join('');
+
+        const singleRows = renderLeaderboardRows(singleScores);
+        const multiRows = renderLeaderboardRows(multiScores);
+
+        html = html.replace('{{SINGLE_LEADERBOARD_ROWS}}', singleRows);
+        html = html.replace('{{MULTI_LEADERBOARD_ROWS}}', multiRows);
+
+        // Visibility classes
+        if (singleRows.length) {
+            html = html.replace('{{SINGLE_TABLE_VISIBILITY}}', '');
+            html = html.replace('{{SINGLE_NO_GAMES_VISIBILITY}}', 'd-none');
+        } else {
+            html = html.replace('{{SINGLE_TABLE_VISIBILITY}}', 'd-none');
+            html = html.replace('{{SINGLE_NO_GAMES_VISIBILITY}}', '');
+        }
+
+        if (multiRows.length) {
+            html = html.replace('{{MULTI_TABLE_VISIBILITY}}', '');
+            html = html.replace('{{MULTI_NO_GAMES_VISIBILITY}}', 'd-none');
+        } else {
+            html = html.replace('{{MULTI_TABLE_VISIBILITY}}', 'd-none');
+            html = html.replace('{{MULTI_NO_GAMES_VISIBILITY}}', '');
+        }
+
+        res.send(html);
+    } catch (error) {
+        console.error('Error in /leaderboard route:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
+
+/** Escape HTML to prevent injection in leaderboard names */
+function escapeHtml(text) {
+    if (typeof text !== 'string') return text;
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    };
+    return text.replace(/[&<>"']/g, (char) => map[char]);
+}
 
 router.get('/resetpassword', authMiddleware, (req, res) => {
     res.sendFile(path.join(__dirname, '../../public/html/resetpassword.html'));
