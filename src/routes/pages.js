@@ -247,7 +247,6 @@ router.get('/leaderboard', async (req, res) => {
         html = html.replace('{{SINGLE_LEADERBOARD_ROWS}}', singleRows);
         html = html.replace('{{MULTI_LEADERBOARD_ROWS}}', multiRows);
 
-        // Visibility classes
         if (singleRows.length) {
             html = html.replace('{{SINGLE_TABLE_VISIBILITY}}', '');
             html = html.replace('{{SINGLE_NO_GAMES_VISIBILITY}}', 'd-none');
@@ -271,7 +270,6 @@ router.get('/leaderboard', async (req, res) => {
     }
 });
 
-/** Escape HTML to prevent injection in leaderboard names */
 function escapeHtml(text) {
     if (typeof text !== 'string') return text;
     const map = {
