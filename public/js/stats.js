@@ -1,9 +1,15 @@
 import { createToastMessage } from './global.js';
 
 $(document).ready(function() {
-    // Initialize tooltips for stat cells that already have title attributes (set server-side)
-    const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    // Initialize tooltips for stat cells with valid percentages
+    const tooltipElements = document.querySelectorAll('[data-tooltip-pct]');
     tooltipElements.forEach(el => {
-        new bootstrap.Tooltip(el);
+        const pct = el.getAttribute('data-tooltip-pct');
+        if (pct && pct.trim() !== '') {
+            el.setAttribute('data-bs-toggle', 'tooltip');
+            el.setAttribute('data-bs-placement', 'right');
+            el.setAttribute('title', `${pct}%`);
+            new bootstrap.Tooltip(el);
+        }
     });
 });

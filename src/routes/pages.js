@@ -158,7 +158,7 @@ router.get('/stats', async (req, res) => {
 
             // Calculate and replace percentages for tooltips
             const calcPercent = (numerator, denominator) => {
-                return denominator > 0 ? ((numerator / denominator) * 100).toFixed(0) : '-';
+                return denominator > 0 ? ((numerator / denominator) * 100).toFixed(0) : '';
             };
 
             html = html.replace('{{SINGLE_BONUSES_PCT}}', calcPercent(s.bonuses, s.games));
