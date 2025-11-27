@@ -103,18 +103,12 @@
                 <h2 class="m-0">Leaderboard</h2>
             </div>
 
-            <div id="loading-spinner" class="d-flex justify-content-center my-6">
-                <div class="spinner-border text-light" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-
-            <div id="leaderboard-container" class="row mx-auto d-none">
+            <div id="leaderboard-container" class="row mx-auto">
                 <div class="col d-flex flex-column align-items-center text-center mt-xxl-6 mt-4">
                     <h3 class="mb-xxl-3 mb-2">Single</h3>
 
                     <div id="single-leaderboard-container" class="d-flex flex-column align-items-center text-center w-100">
-                        <table id="single-leaderboard-table" class="leaderboard-table d-none">
+                        <table id="single-leaderboard-table" class="leaderboard-table {{SINGLE_TABLE_VISIBILITY}}">
                             <thead>
                                 <tr>
                                     <th class="col-1" scope="col">#</th>
@@ -123,9 +117,9 @@
                                     <th class="col-3" scope="col">Date</th>
                                 </tr>
                             </thead>
-                            <tbody id="single-leaderboard-table-body"></tbody>
+                            <tbody id="single-leaderboard-table-body">{{SINGLE_LEADERBOARD_ROWS}}</tbody>
                         </table>
-                        <p id="single-no-games-found" class="no-games-found">No games found</p>
+                        <p id="single-no-games-found" class="no-games-found {{SINGLE_NO_GAMES_VISIBILITY}}">No games found</p>
                     </div>
                 </div>
 
@@ -133,7 +127,7 @@
                     <h3 class="mb-xxl-3 mb-2">Multi</h3>
 
                     <div id="multi-leaderboard-container" class="d-flex flex-column align-items-center text-center w-100">
-                        <table id="multi-leaderboard-table" class="leaderboard-table d-none">
+                        <table id="multi-leaderboard-table" class="leaderboard-table {{MULTI_TABLE_VISIBILITY}}">
                             <thead>
                                 <tr>
                                     <th scope="col-1">#</th>
@@ -142,9 +136,9 @@
                                     <th scope="col-3">Date</th>
                                 </tr>
                             </thead>
-                            <tbody id="multi-leaderboard-table-body"></tbody>
+                            <tbody id="multi-leaderboard-table-body">{{MULTI_LEADERBOARD_ROWS}}</tbody>
                         </table>
-                        <p id="multi-no-games-found" class="no-games-found">No games found</p>
+                        <p id="multi-no-games-found" class="no-games-found {{MULTI_NO_GAMES_VISIBILITY}}">No games found</p>
                     </div>
                 </div>
             </div>

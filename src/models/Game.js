@@ -1,5 +1,6 @@
 import Player from './Player.js';
 import db from '../utils/DBUtil.js';
+import redis from '../utils/RedisUtil.js';
 import { rando } from '@nastyox/rando.js';
 import { diceNumToText } from '../utils/Util.js';
 
@@ -297,7 +298,7 @@ export default class Game { // contruct game objects when multiplayer room is cr
     }
 
     savePlayerScores() {
-        this.players.forEach(player => {
+        this.players.forEach(async (player) => {
             const userId = player.userId;
 
             if(userId) {
@@ -307,13 +308,30 @@ export default class Game { // contruct game objects when multiplayer room is cr
 
                 try {
                     if(this.isSinglePlayer) {
-                        db.insertSingleGame(userId, isBonus, numYahtzees, totalScore);
+                        await db.insertSingleGame(userId, isBonus, numYahtzees, totalScore);
                     }
                     else {
                         const winningUserId = this.winner.userId;
                         const isWinner = userId === winningUserId;
-                        db.insertMultiGame(userId, isBonus, numYahtzees, totalScore, isWinner);
+                        await db.insertMultiGame(userId, isBonus, numYahtzees, totalScore, isWinner);
                     }
+
+                    // Invalidate and refresh the cache for this user's stats
+                    await redis.invalidateUserStatsCache(userId);
+                    
+                    // Fetch fresh stats from database and cache them
+                    const singleStatsQuery = db.getSingleStats(userId);
+                    const multiStatsQuery = db.getMultiStats(userId);
+                    const singleTopScoresQuery = db.getSingleTopScores(userId);
+                    const multiTopScoresQuery = db.getMultiTopScores(userId);
+
+                    const results = await Promise.all([singleStatsQuery, multiStatsQuery, singleTopScoresQuery, multiTopScoresQuery]);
+                    const singleStats = results[0][0] || { bonuses: 0, yahtzees: 0, games: 0, average_score: 0 };
+                    const multiStats = results[1][0] || { bonuses: 0, yahtzees: 0, games: 0, average_score: 0, wins: 0 };
+                    const singleTopScores = results[2] || [];
+                    const multiTopScores = results[3] || [];
+
+                    await redis.cacheUserStats(userId, singleStats, multiStats, singleTopScores, multiTopScores);
                 }
                 catch(error) {
                     console.log(error);
