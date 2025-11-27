@@ -49,9 +49,8 @@ class RedisUtil {
 
         try {
             const key = this.getRedisKey(userId);
-
-            // Cache for 24 hours (86400 seconds)
-            const ttl = 24 * 60 * 60;
+            const ttlDays = 30;
+            const ttl = ttlDays * 24 * 60 * 60;
 
             const payload = JSON.stringify({
                 singleStats,
