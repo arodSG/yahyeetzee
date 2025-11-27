@@ -147,5 +147,4 @@ class RedisUtil {
 }
 
 const instance = new RedisUtil();
-Object.freeze(instance);
 export default instance;
