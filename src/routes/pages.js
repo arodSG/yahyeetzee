@@ -136,14 +136,9 @@ router.get('/stats', async (req, res) => {
         }
 
         // Render the stats page with injected data
+        const statsDataScript = `<script>window.injectedStatsData = ${JSON.stringify(statsData)};</script>`;
         const statsHtmlPath = path.join(__dirname, '../../public/html/stats.html');
         let html = readFileSync(statsHtmlPath, 'utf-8');
-        
-        // Inject the stats data as a window variable before the stats.js script loads
-        const statsDataScript = `<script>
-            window.injectedStatsData = ${JSON.stringify(statsData)};
-        </script>`;
-
         html = html.replace('</head>', `${statsDataScript}\n    </head>`);
         res.send(html);
     } catch(error) {

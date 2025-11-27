@@ -6,7 +6,6 @@ $(document).ready(function() {
         displayStats(window.injectedStatsData);
     } else {
         // If no data was injected (shouldn't happen), show error
-        $('#loading-spinner').addClass('d-none');
         createToastMessage('Error: Unable to load stats', true);
     }
 });
@@ -69,8 +68,7 @@ function displayStats(response) {
         }
     }
 
-    $('#loading-spinner').addClass('d-none');
-    $('.stats-container').removeClass('d-none');
+    // Stats containers are visible by default now; nothing else to do here.
 }
 
 function getTopScoresTableHtml(topScoresArr) {
