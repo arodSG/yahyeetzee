@@ -1,4 +1,4 @@
-import { createToastMessage } from './global.js';
+import { settings, setTooltipTheme } from './global.js';
 
 $(document).ready(function() {
     // Initialize tooltips for stat cells with valid percentages
@@ -12,4 +12,6 @@ $(document).ready(function() {
             new bootstrap.Tooltip(el);
         }
     });
+
+    setTooltipTheme(settings.isBackgroundLight);
 });
