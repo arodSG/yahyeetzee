@@ -65,7 +65,7 @@ io.use((socket, next) => {
     const token = cookies.loggedInToken || null;
 
     if(!token) {
-        next();
+        return next();
     }
 
     try {
